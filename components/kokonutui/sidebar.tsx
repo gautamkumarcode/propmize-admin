@@ -5,21 +5,18 @@ import type React from "react";
 import {
 	BarChart2,
 	Building2,
-	CheckCircle,
-	DollarSign,
-	FileText,
 	HelpCircle,
 	Home,
-	MapPin,
 	Menu,
 	Settings,
-	TrendingUp,
 	UserCheck,
 	Users2,
 } from "lucide-react";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import logo from "../../assests/logo.png";
 
 export default function Sidebar() {
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -67,7 +64,7 @@ export default function Sidebar() {
 						href="/dashboard"
 						className="h-16 px-6 flex items-center border-b border-gray-200 dark:border-[#1F1F23]">
 						<div className="flex items-center gap-3">
-							<Building2 className="h-8 w-8 text-blue-600" />
+							<Image src={logo} alt="Propmize Logo" width={30} height={30} />
 							<span className="text-lg font-semibold hover:cursor-pointer text-gray-900 dark:text-white">
 								Propmize
 							</span>
@@ -90,9 +87,9 @@ export default function Sidebar() {
 									<NavItem href="/dashboard/properties" icon={Building2}>
 										Properties
 									</NavItem>
-									<NavItem href="/dashboard/locations" icon={MapPin}>
+									{/* <NavItem href="/dashboard/locations" icon={MapPin}>
 										Locations
-									</NavItem>
+									</NavItem> */}
 								</div>
 							</div>
 
@@ -101,22 +98,22 @@ export default function Sidebar() {
 									Management
 								</div>
 								<div className="space-y-1">
-									<NavItem href="/dashboard/approvals" icon={CheckCircle}>
+									{/* <NavItem href="/dashboard/approvals" icon={CheckCircle}>
 										Approvals
-									</NavItem>
+									</NavItem> */}
 									<NavItem href="/dashboard/agents" icon={UserCheck}>
 										Agents
 									</NavItem>
 									<NavItem href="/dashboard/clients" icon={Users2}>
 										Clients
 									</NavItem>
-									<NavItem href="/dashboard/reports" icon={FileText}>
+									{/* <NavItem href="/dashboard/reports" icon={FileText}>
 										Reports
-									</NavItem>
+									</NavItem> */}
 								</div>
 							</div>
 
-							<div>
+							{/* <div>
 								<div className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
 									Finance
 								</div>
@@ -128,7 +125,7 @@ export default function Sidebar() {
 										Market Trends
 									</NavItem>
 								</div>
-							</div>
+							</div> */}
 						</div>
 					</div>
 

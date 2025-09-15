@@ -9,6 +9,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useGetAnalyticsDashboard } from "@/lib/hooks/useAdmin";
 import {
 	Building2,
 	CheckCircle,
@@ -37,42 +38,58 @@ import {
 	YAxis,
 } from "recharts";
 
-// Mock data for analytics
-const monthlyData = [
-	{ month: "Jan", listings: 45, sales: 32, revenue: 2400000 },
-	{ month: "Feb", listings: 52, sales: 38, revenue: 2800000 },
-	{ month: "Mar", listings: 48, sales: 35, revenue: 2600000 },
-	{ month: "Apr", listings: 61, sales: 42, revenue: 3200000 },
-	{ month: "May", listings: 55, sales: 39, revenue: 2900000 },
-	{ month: "Jun", listings: 67, sales: 48, revenue: 3600000 },
-];
-
-const propertyTypeData = [
-	{ name: "Houses", value: 45, color: "#3B82F6", percent: 45 / 100 },
-	{ name: "Apartments", value: 30, color: "#10B981", percent: 30 / 100 },
-	{ name: "Condos", value: 20, color: "#F59E0B", percent: 20 / 100 },
-	{ name: "Studios", value: 5, color: "#EF4444", percent: 5 / 100 },
-];
-
-const locationData = [
-	{ location: "Downtown", properties: 85, avgPrice: 450000 },
-	{ location: "Suburbs", properties: 120, avgPrice: 380000 },
-	{ location: "Waterfront", properties: 45, avgPrice: 620000 },
-	{ location: "Arts District", properties: 35, avgPrice: 320000 },
-	{ location: "Business District", properties: 65, avgPrice: 520000 },
-];
-
-const weeklyViewsData = [
-	{ day: "Mon", views: 1200 },
-	{ day: "Tue", views: 1400 },
-	{ day: "Wed", views: 1100 },
-	{ day: "Thu", views: 1600 },
-	{ day: "Fri", views: 1800 },
-	{ day: "Sat", views: 2200 },
-	{ day: "Sun", views: 1900 },
-];
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AnalyticsDashboard() {
+	const { data: data, isLoading, error } = useGetAnalyticsDashboard();
+
+	if (isLoading) {
+		return <Skeleton className="h-[600px] w-full" />;
+	}
+	if (error || !data) {
+		return <div className="text-red-500">Failed to load analytics.</div>;
+	}
+
+	// Map API data to chart formats
+	const monthlyData = data.monthlyStats.map(
+		(item) => ({
+			month: `${item._id.month}/${item._id.year}`,
+			listings: item.listings,
+			sales: item.sales,
+			revenue:
+				data.monthlyRevenue.find(
+					(rev  ) =>
+						rev._id.month === item._id.month && rev._id.year === item._id.year
+				)?.revenue || 0,
+		})
+	);
+
+	const propertyTypeData = data.propertyTypeStats.map(
+		(item: { _id: string; value: number }) => ({
+			name: item._id,
+			value: item.value,
+			color: "#3B82F6", // You can map colors based on type if needed
+		})
+	);
+
+	const locationData = data.locationStats.map(
+		(loc: { _id: string; properties: number; avgPrice: number }) => ({
+			location: loc._id,
+			properties: loc.properties,
+			avgPrice: loc.avgPrice,
+		})
+	);
+
+	const weeklyViewsData = [
+		{ day: "Mon", views: Math.floor(data.keyMetrics.pageViews / 7) },
+		{ day: "Tue", views: Math.floor(data.keyMetrics.pageViews / 7) },
+		{ day: "Wed", views: Math.floor(data.keyMetrics.pageViews / 7) },
+		{ day: "Thu", views: Math.floor(data.keyMetrics.pageViews / 7) },
+		{ day: "Fri", views: Math.floor(data.keyMetrics.pageViews / 7) },
+		{ day: "Sat", views: Math.floor(data.keyMetrics.pageViews / 7) },
+		{ day: "Sun", views: Math.floor(data.keyMetrics.pageViews / 7) },
+	];
+
 	return (
 		<div className="space-y-6">
 			<div>
@@ -94,11 +111,21 @@ export default function AnalyticsDashboard() {
 						<Building2 className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold">1,234</div>
+						<div className="text-2xl font-bold">
+							{data.keyMetrics.totalProperties}
+						</div>
 						<p className="text-xs text-muted-foreground">
 							<span className="text-green-600 flex items-center gap-1">
 								<TrendingUp className="h-3 w-3" />
-								+12.5%
+								{(() => {
+									const prev = data.keyMetrics.prevTotalProperties;
+									const curr = data.keyMetrics.totalProperties;
+									if (typeof prev === "number" && prev > 0) {
+										const percent = ((curr - prev) / prev) * 100;
+										return `${percent >= 0 ? "+" : ""}${percent.toFixed(1)}%`;
+									}
+									return "N/A";
+								})()}
 							</span>
 							from last month
 						</p>
@@ -111,11 +138,21 @@ export default function AnalyticsDashboard() {
 						<Users className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold">8,456</div>
+						<div className="text-2xl font-bold">
+							{data.keyMetrics.activeUsers}
+						</div>
 						<p className="text-xs text-muted-foreground">
 							<span className="text-green-600 flex items-center gap-1">
 								<TrendingUp className="h-3 w-3" />
-								+8.2%
+								{(() => {
+									const prev = data.keyMetrics.prevActiveUsers;
+									const curr = data.keyMetrics.activeUsers;
+									if (typeof prev === "number" && prev > 0) {
+										const percent = ((curr - prev) / prev) * 100;
+										return `${percent >= 0 ? "+" : ""}${percent.toFixed(1)}%`;
+									}
+									return "N/A";
+								})()}
 							</span>
 							from last month
 						</p>
@@ -130,11 +167,21 @@ export default function AnalyticsDashboard() {
 						<DollarSign className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold">$3.6M</div>
+						<div className="text-2xl font-bold">
+							{"Rs" + data.keyMetrics.totalRevenue.toLocaleString()}
+						</div>
 						<p className="text-xs text-muted-foreground">
 							<span className="text-green-600 flex items-center gap-1">
 								<TrendingUp className="h-3 w-3" />
-								+24.1%
+								{(() => {
+									const prev = data.keyMetrics.prevTotalRevenue;
+									const curr = data.keyMetrics.totalRevenue;
+									if (typeof prev === "number" && prev > 0) {
+										const percent = ((curr - prev) / prev) * 100;
+										return `${percent >= 0 ? "+" : ""}${percent.toFixed(1)}%`;
+									}
+									return "N/A";
+								})()}
 							</span>
 							from last month
 						</p>
@@ -147,11 +194,21 @@ export default function AnalyticsDashboard() {
 						<Eye className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold">45.2K</div>
+						<div className="text-2xl font-bold">
+							{data.keyMetrics.pageViews.toLocaleString()}
+						</div>
 						<p className="text-xs text-muted-foreground">
 							<span className="text-red-600 flex items-center gap-1">
 								<TrendingDown className="h-3 w-3" />
-								-2.1%
+								{(() => {
+									const prev = data.keyMetrics.prevPageViews;
+									const curr = data.keyMetrics.pageViews;
+									if (typeof prev === "number" && prev > 0) {
+										const percent = ((curr - prev) / prev) * 100;
+										return `${percent >= 0 ? "+" : ""}${percent.toFixed(1)}%`;
+									}
+									return "N/A";
+								})()}
 							</span>
 							from last month
 						</p>
@@ -240,16 +297,22 @@ export default function AnalyticsDashboard() {
 											label={(props) => {
 												const { name, value } = props;
 												const total = propertyTypeData.reduce(
-													(sum, entry) => sum + entry.value,
+													(sum: number, entry: { value: number }) =>
+														sum + entry.value,
 													0
 												);
 												const percent =
 													typeof value === "number" ? value / total : 0;
 												return `${name} ${(percent * 100).toFixed(0)}%`;
 											}}>
-											{propertyTypeData.map((entry, index) => (
-												<Cell key={`cell-${index}`} fill={entry.color} />
-											))}
+											{propertyTypeData.map(
+												(
+													entry: { color: string | undefined },
+													index: number
+												) => (
+													<Cell key={`cell-${index}`} fill={entry.color} />
+												)
+											)}
 										</Pie>
 										<Tooltip />
 									</PieChart>
@@ -294,7 +357,9 @@ export default function AnalyticsDashboard() {
 								<Clock className="h-4 w-4 text-yellow-600" />
 							</CardHeader>
 							<CardContent>
-								<div className="text-2xl font-bold">23</div>
+								<div className="text-2xl font-bold">
+									{data.propertiesMetrics.pendingApprovals}
+								</div>
 								<p className="text-xs text-muted-foreground">
 									Properties awaiting review
 								</p>
@@ -309,7 +374,9 @@ export default function AnalyticsDashboard() {
 								<CheckCircle className="h-4 w-4 text-green-600" />
 							</CardHeader>
 							<CardContent>
-								<div className="text-2xl font-bold">12</div>
+								<div className="text-2xl font-bold">
+									{data.propertiesMetrics.approvedToday}
+								</div>
 								<p className="text-xs text-muted-foreground">
 									Properties approved today
 								</p>
@@ -324,7 +391,9 @@ export default function AnalyticsDashboard() {
 								<DollarSign className="h-4 w-4 text-blue-600" />
 							</CardHeader>
 							<CardContent>
-								<div className="text-2xl font-bold">$485K</div>
+								<div className="text-2xl font-bold">
+									${data.propertiesMetrics.avgPrice.toLocaleString()}
+								</div>
 								<p className="text-xs text-muted-foreground">
 									Across all properties
 								</p>
@@ -343,27 +412,36 @@ export default function AnalyticsDashboard() {
 						</CardHeader>
 						<CardContent>
 							<div className="space-y-4">
-								{locationData.map((location, index) => (
-									<div
-										key={index}
-										className="flex items-center justify-between p-4 border rounded-lg">
-										<div className="flex items-center gap-3">
-											<MapPin className="h-5 w-5 text-blue-600" />
-											<div>
-												<div className="font-medium">{location.location}</div>
-												<div className="text-sm text-gray-500">
-													{location.properties} properties
+								{locationData.map(
+									(
+										location: {
+											location: string;
+											properties: number;
+											avgPrice: number;
+										},
+										index: number
+									) => (
+										<div
+											key={index}
+											className="flex items-center justify-between p-4 border rounded-lg">
+											<div className="flex items-center gap-3">
+												<MapPin className="h-5 w-5 text-blue-600" />
+												<div>
+													<div className="font-medium">{location.location}</div>
+													<div className="text-sm text-gray-500">
+														{location.properties} properties
+													</div>
 												</div>
 											</div>
-										</div>
-										<div className="text-right">
-											<div className="font-semibold">
-												${location.avgPrice.toLocaleString()}
+											<div className="text-right">
+												<div className="font-semibold">
+													${location.avgPrice.toLocaleString()}
+												</div>
+												<div className="text-sm text-gray-500">avg price</div>
 											</div>
-											<div className="text-sm text-gray-500">avg price</div>
 										</div>
-									</div>
-								))}
+									)
+								)}
 							</div>
 						</CardContent>
 					</Card>
@@ -379,19 +457,27 @@ export default function AnalyticsDashboard() {
 							<CardContent className="space-y-4">
 								<div className="flex justify-between items-center">
 									<span className="text-sm">Listing to Sale Rate</span>
-									<Badge className="bg-green-100 text-green-800">68.5%</Badge>
+									<Badge className="bg-green-100 text-green-800">
+										{data.conversionMetrics.listingToSaleRate}%
+									</Badge>
 								</div>
 								<div className="flex justify-between items-center">
 									<span className="text-sm">Average Days on Market</span>
-									<Badge variant="secondary">24 days</Badge>
+									<Badge variant="secondary">
+										{data.conversionMetrics.avgDaysOnMarket} days
+									</Badge>
 								</div>
 								<div className="flex justify-between items-center">
 									<span className="text-sm">User Engagement Rate</span>
-									<Badge className="bg-blue-100 text-blue-800">84.2%</Badge>
+									<Badge className="bg-blue-100 text-blue-800">
+										{data.conversionMetrics.userEngagementRate}%
+									</Badge>
 								</div>
 								<div className="flex justify-between items-center">
 									<span className="text-sm">Return Visitor Rate</span>
-									<Badge className="bg-purple-100 text-purple-800">42.1%</Badge>
+									<Badge className="bg-purple-100 text-purple-800">
+										{data.conversionMetrics.returnVisitorRate}%
+									</Badge>
 								</div>
 							</CardContent>
 						</Card>
@@ -402,26 +488,20 @@ export default function AnalyticsDashboard() {
 								<CardDescription>Latest platform activities</CardDescription>
 							</CardHeader>
 							<CardContent className="space-y-3">
-								<div className="flex items-center gap-3 text-sm">
-									<CheckCircle className="h-4 w-4 text-green-600" />
-									<span>Property approved: Downtown Loft</span>
-									<span className="text-gray-500 ml-auto">2m ago</span>
-								</div>
-								<div className="flex items-center gap-3 text-sm">
-									<Building2 className="h-4 w-4 text-blue-600" />
-									<span>New listing: Suburban Home</span>
-									<span className="text-gray-500 ml-auto">15m ago</span>
-								</div>
-								<div className="flex items-center gap-3 text-sm">
-									<Users className="h-4 w-4 text-purple-600" />
-									<span>New agent registered</span>
-									<span className="text-gray-500 ml-auto">1h ago</span>
-								</div>
-								<div className="flex items-center gap-3 text-sm">
-									<DollarSign className="h-4 w-4 text-green-600" />
-									<span>Sale completed: $650K</span>
-									<span className="text-gray-500 ml-auto">3h ago</span>
-								</div>
+								{data.recentActivity.map(
+									(
+										activity: { description: string; time: string },
+										idx: number
+									) => (
+										<div key={idx} className="flex items-center gap-3 text-sm">
+											{/* You can use icons based on activity.type if desired */}
+											<span>{activity.description}</span>
+											<span className="text-gray-500 ml-auto">
+												{activity.time}
+											</span>
+										</div>
+									)
+								)}
 							</CardContent>
 						</Card>
 					</div>

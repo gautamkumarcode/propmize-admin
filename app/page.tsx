@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation"
+import LandingPageHOC from "@/components/screen/landingpage/LandingPageHOC";
 
 export default function Home() {
-  redirect("/dashboard")
+	return <LandingPageHOC />;
 }

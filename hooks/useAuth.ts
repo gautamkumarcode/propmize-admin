@@ -1,0 +1,212 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { QueryKeys } from "../lib/react-query/queryClient";
+import { AuthService } from "../lib/services/authService";
+import {
+	ApiResponse,
+	AuthResponse,
+	LoginCredentials,
+	RegisterData,
+} from "../lib/types/api";
+
+interface HttpError {
+	response?: {
+		status: number;
+		data?: {
+			message?: string;
+			error?: string;
+		};
+	};
+	message?: string;
+}
+
+function isHttpError(error: unknown): error is HttpError {
+	return (
+		typeof error === "object" &&
+		error !== null &&
+		"response" in error &&
+		typeof (error as HttpError).response?.status === "number"
+	);
+}
+
+export const useLogin = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (credentials: LoginCredentials) =>
+			AuthService.login(credentials),
+		retry: false,
+		onSuccess: (data: ApiResponse<AuthResponse>) => {
+			queryClient.setQueryData(QueryKeys.profile, data.data.user);
+			queryClient.invalidateQueries({ queryKey: QueryKeys.auth });
+			queryClient.invalidateQueries({ queryKey: QueryKeys.profile });
+			queryClient.refetchQueries({ queryKey: QueryKeys.profile });
+			setTimeout(() => {}, 500);
+		},
+		onError: (error: unknown) => {
+			const errorMessage =
+				isHttpError(error) && error.response?.data?.message
+					? error.response.data.message
+					: "Login failed";
+			console.error("Login failed:", errorMessage);
+			console.error("Full error:", error);
+		},
+	});
+};
+
+export const useRegister = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (userData: RegisterData) => AuthService.register(userData),
+		retry: false,
+		onSuccess: (data: ApiResponse<AuthResponse>) => {
+			queryClient.setQueryData(QueryKeys.profile, data.data.user);
+			console.log("Account created successfully!");
+			queryClient.invalidateQueries({ queryKey: QueryKeys.auth });
+			queryClient.invalidateQueries({ queryKey: QueryKeys.profile });
+			queryClient.refetchQueries({ queryKey: QueryKeys.profile });
+		},
+		onError: (error: unknown) => {
+			const errorMessage =
+				isHttpError(error) && error.response?.data?.message
+					? error.response.data.message
+					: "Registration failed";
+			console.error("Registration failed:", errorMessage);
+		},
+	});
+};
+
+export const useLogout = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: () => AuthService.logout(),
+		onSuccess: () => {
+			queryClient.clear();
+		},
+		onError: (error: unknown) => {
+			queryClient.clear();
+		},
+	});
+};
+
+export const useProfile = () => {
+	const isAuth = AuthService.isAuthenticated();
+
+	return useQuery({
+		queryKey: QueryKeys.profile,
+		queryFn: async () => {
+			const result = await AuthService.getProfile();
+			return result;
+		},
+		enabled: isAuth,
+		select: (data) => {
+			return data.data;
+		},
+		staleTime: 5 * 60 * 1000,
+		retry: (failureCount, error: unknown) => {
+			if (
+				isHttpError(error) &&
+				(error.response?.status === 401 || error.response?.status === 403)
+			) {
+				return false;
+			}
+			return failureCount < 2;
+		},
+	});
+};
+
+export const useForgotPassword = () => {
+	return useMutation({
+		mutationFn: (email: string) => AuthService.forgotPassword(email),
+		onSuccess: () => {
+			console.log("Password reset link sent to your email");
+		},
+		onError: (error: unknown) => {
+			const errorMessage =
+				isHttpError(error) && error.response?.data?.message
+					? error.response.data.message
+					: "Failed to send reset link";
+			console.error(errorMessage);
+		},
+	});
+};
+
+export const useResetPassword = () => {
+	return useMutation({
+		mutationFn: ({ token, password }: { token: string; password: string }) =>
+			AuthService.resetPassword(token, password),
+		onSuccess: () => {
+			console.log("Password reset successfully");
+		},
+		onError: (error: unknown) => {
+			const errorMessage =
+				isHttpError(error) && error.response?.data?.message
+					? error.response.data.message
+					: "Password reset failed";
+			console.error(errorMessage);
+		},
+	});
+};
+
+export const useVerifyEmail = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (token: string) => AuthService.verifyEmail(token),
+		onSuccess: () => {
+			console.log("Email verified successfully");
+			queryClient.invalidateQueries({ queryKey: QueryKeys.profile });
+		},
+		onError: (error: unknown) => {
+			const errorMessage =
+				isHttpError(error) && error.response?.data?.message
+					? error.response.data.message
+					: "Email verification failed";
+			console.error(errorMessage);
+		},
+	});
+};
+
+export const useResendVerification = () => {
+	return useMutation({
+		mutationFn: () => AuthService.resendVerification(),
+		onSuccess: () => {
+			console.log("Verification email sent");
+		},
+		onError: (error: unknown) => {
+			const errorMessage =
+				isHttpError(error) && error.response?.data?.message
+					? error.response.data.message
+					: "Failed to send verification email";
+			console.error(errorMessage);
+		},
+	});
+};
+
+// export const useUpdateProfile = () => {
+// 	const queryClient = useQueryClient();
+
+// 	return useMutation({
+// 		mutationFn: (profileData: FormData) => {
+// 			if (profileData instanceof FormData) {
+// 				for (const [key, value] of profileData.entries()) {
+// 					console.log(key, value);
+// 				}
+// 			}
+// 			return UserService.updateProfile(profileData);
+// 		},
+// 		onSuccess: (data: ApiResponse<User>) => {
+// 			queryClient.setQueryData(QueryKeys.profile, data.data);
+// 			queryClient.invalidateQueries({ queryKey: QueryKeys.profile });
+// 			queryClient.invalidateQueries({ queryKey: ["user"] });
+// 		},
+// 		onError: (error: unknown) => {
+// 			const errorMessage =
+// 				isHttpError(error) && error.response?.data?.message
+// 					? error.response.data.message
+// 					: "Failed to update profile";
+// 			console.error("Failed to update profile:", errorMessage);
+// 		},
+// 	});
+// };

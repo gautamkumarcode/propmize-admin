@@ -1,0 +1,31 @@
+"use client";
+
+import { queryClient } from "@/lib/react-query/queryClient";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { createContext, ReactNode, useContext } from "react";
+
+// Create a context for the query client
+const QueryContext = createContext<QueryClient | null>(null);
+
+interface QueryProviderProps {
+	children: ReactNode;
+}
+
+export function QueryProvider({ children }: QueryProviderProps) {
+	return (
+		<QueryClientProvider client={queryClient}>
+			<QueryContext.Provider value={queryClient}>
+				{children}
+			</QueryContext.Provider>
+		</QueryClientProvider>
+	);
+}
+
+// Hook to use the query client
+export function useQueryClient() {
+	const client = useContext(QueryContext);
+	if (!client) {
+		throw new Error("useQueryClient must be used within a QueryProvider");
+	}
+	return client;
+}

@@ -1,4 +1,4 @@
-import Layout from "@/components/kokonutui/layout";
+import { Providers } from "@/components/provider/Provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -24,7 +24,7 @@ export default function RootLayout({
 					defaultTheme="system"
 					enableSystem
 					disableTransitionOnChange>
-					<Layout>{children}</Layout>
+					<Providers>{children}</Providers>
 				</ThemeProvider>
 			</body>
 		</html>
