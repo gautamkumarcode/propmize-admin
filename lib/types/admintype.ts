@@ -316,7 +316,7 @@ export interface AdminClientResponse {
 	propertiesLiked?: string[];
 	propertiesContacted?: string[];
 	propertyValue?: number;
-	propertiesListed?: number;
+	propertiesCount?: number;
 }
 
 export interface UserAddress {

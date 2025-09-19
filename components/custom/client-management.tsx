@@ -4,7 +4,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -12,7 +20,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { useGetAllClients } from "@/lib/hooks/useAdmin";
+import { useCreateClient, useGetAllClients } from "@/lib/hooks/useAdmin";
 import {
 	DollarSign,
 	Eye,
@@ -26,124 +34,107 @@ import {
 	Users,
 } from "lucide-react";
 import { useState } from "react";
-
-// Mock data for clients
-const mockClients = [
-  {
-    id: 1,
-    name: "Robert Wilson",
-    email: "robert.wilson@email.com",
-    phone: "+1 (555) 987-6543",
-    type: "buyer",
-    status: "active",
-    budget: 750000,
-    location: "Downtown",
-    agent: "John Smith",
-    joinDate: "2024-01-15",
-    lastActivity: "2024-01-20",
-    propertiesViewed: 12,
-    avatar: "/placeholder.svg?height=40&width=40&text=RW",
-  },
-  {
-    id: 2,
-    name: "Emily Rodriguez",
-    email: "emily.rodriguez@email.com",
-    phone: "+1 (555) 876-5432",
-    type: "seller",
-    status: "active",
-    propertyValue: 620000,
-    location: "Suburbs",
-    agent: "Sarah Johnson",
-    joinDate: "2024-01-10",
-    lastActivity: "2024-01-19",
-    propertiesListed: 1,
-    avatar: "/placeholder.svg?height=40&width=40&text=ER",
-  },
-  {
-    id: 3,
-    name: "David Kim",
-    email: "david.kim@email.com",
-    phone: "+1 (555) 765-4321",
-    type: "buyer",
-    status: "inactive",
-    budget: 450000,
-    location: "Arts District",
-    agent: "Mike Davis",
-    joinDate: "2023-12-20",
-    lastActivity: "2024-01-05",
-    propertiesViewed: 8,
-    avatar: "/placeholder.svg?height=40&width=40&text=DK",
-  },
-  {
-    id: 4,
-    name: "Jennifer Brown",
-    email: "jennifer.brown@email.com",
-    phone: "+1 (555) 654-3210",
-    type: "investor",
-    status: "active",
-    budget: 1200000,
-    location: "Waterfront",
-    agent: "Lisa Chen",
-    joinDate: "2024-01-08",
-    lastActivity: "2024-01-21",
-    propertiesViewed: 25,
-    avatar: "/placeholder.svg?height=40&width=40&text=JB",
-  },
-]
+import { Skeleton } from "../ui/skeleton";
 
 export default function ClientManagement() {
-  const [clients, setClients] = useState(mockClients)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [typeFilter, setTypeFilter] = useState("all")
-  const [statusFilter, setStatusFilter] = useState("all")
-
-  const { data: clientsData = [], isLoading, isError } = useGetAllClients();
-
-	console.log(clientsData);
-
-	const filteredClients = clientsData.filter((client) => {
-		const matchesSearch =
-			client?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			client?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			client?.address?.city?.toLowerCase().includes(searchTerm.toLowerCase());
-		const matchesType = typeFilter === "all" || client?.role === typeFilter;
-		const matchesStatus =
-			statusFilter === "all" ||
-			(statusFilter === "active" && client?.isActive === true) ||
-			(statusFilter === "inactive" && client?.isActive === false);
-
-		return matchesSearch && matchesType && matchesStatus;
+	const [searchTerm, setSearchTerm] = useState("");
+	const [typeFilter, setTypeFilter] = useState("");
+	const [statusFilter, setStatusFilter] = useState("");
+	const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+	const [newClient, setNewClient] = useState({
+		name: "",
+		email: "",
+		phone: "",
+		role: "",
 	});
 
-  const getTypeBadge = (type: string) => {
-    switch (type) {
-      case "buyer":
-        return <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">Buyer</Badge>
-      case "seller":
-        return <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Seller</Badge>
-      case "investor":
-        return <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">Investor</Badge>
-      default:
-        return <Badge variant="secondary">{type}</Badge>
-    }
-  }
+	// Only send params if they have values
+	const searchParams: Record<string, string> = {};
+	if (statusFilter && statusFilter !== "all")
+		searchParams.status = statusFilter;
+	if (typeFilter && typeFilter !== "all") searchParams.type = typeFilter;
+	if (searchTerm) searchParams.search = searchTerm;
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "active":
-        return <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Active</Badge>
-      case "inactive":
-        return <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">Inactive</Badge>
-      default:
-        return <Badge variant="secondary">{status}</Badge>
-    }
-  }
+	const {
+		data: clientsData = [],
+		isLoading,
+		isRefetching,
+		isError,
+	} = useGetAllClients(
+		searchParams.status,
+		searchParams.type,
+		searchParams.search
+	);
 
-  const buyers = clients.filter((c) => c.type === "buyer")
-  const sellers = clients.filter((c) => c.type === "seller")
-  const investors = clients.filter((c) => c.type === "investor")
+	const filteredClients = clientsData;
 
-  return (
+	// if (isLoading || !clientsData || isRefetching) {
+	// 	return <ClientManagementSkeleton />;
+	// }
+	const getTypeBadge = (type: string) => {
+		switch (type) {
+			case "buyer":
+				return (
+					<Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+						Buyer
+					</Badge>
+				);
+			case "seller":
+				return (
+					<Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+						Seller
+					</Badge>
+				);
+			case "investor":
+				return (
+					<Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+						Investor
+					</Badge>
+				);
+			default:
+				return <Badge variant="secondary">{type}</Badge>;
+		}
+	};
+
+	const getStatusBadge = (status: string) => {
+		switch (status) {
+			case "active":
+				return (
+					<Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+						Active
+					</Badge>
+				);
+			case "inactive":
+				return (
+					<Badge className="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
+						Inactive
+					</Badge>
+				);
+			default:
+				return <Badge variant="secondary">{status}</Badge>;
+		}
+	};
+
+	const buyers = clientsData.filter((c) => c.role === "buyer");
+	const sellers = clientsData.filter((c) => c.role === "seller");
+	const investors = clientsData.filter((c) => c.role === "investor");
+
+	const createClientMutation = useCreateClient();
+	const handleCreateClient = (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		createClientMutation.mutate(newClient, {
+			onSuccess: () => {
+				setIsAddDialogOpen(false);
+				setNewClient({ name: "", email: "", phone: "", role: "" });
+			},
+			onError: (error: unknown) => {
+				console.error("Error creating client:", error);
+				alert("Failed to create client");
+			},
+		});
+	};
+
+	return (
 		<div className="space-y-6">
 			<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 				<div>
@@ -154,10 +145,102 @@ export default function ClientManagement() {
 						Manage buyers, sellers, and investors
 					</p>
 				</div>
-				<Button>
+				<Button onClick={() => setIsAddDialogOpen(true)}>
 					<UserPlus className="h-4 w-4 mr-2" />
 					Add New Client
 				</Button>
+
+				<Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+					<DialogContent className="max-w-[90vw] md:max-w-[425px]">
+						<DialogHeader>
+							<DialogTitle>Add New Client</DialogTitle>
+							<DialogDescription>
+								Enter details to create a new client.
+							</DialogDescription>
+						</DialogHeader>
+						<form
+							onSubmit={handleCreateClient}
+							className="grid gap-4 py-4"
+							action="">
+							<div className="flex flex-col gap-2">
+								<Label htmlFor="name">Name</Label>
+								<Input
+									id="name"
+									name="name"
+									placeholder="Client Name"
+									required
+									value={newClient.name}
+									onChange={(e) =>
+										setNewClient((c) => ({ ...c, name: e.target.value }))
+									}
+								/>
+							</div>
+							<div className="flex flex-col gap-2">
+								<Label htmlFor="email">Email</Label>
+								<Input
+									id="email"
+									name="email"
+									type="email"
+									placeholder="Email"
+									required
+									value={newClient.email}
+									onChange={(e) =>
+										setNewClient((c) => ({ ...c, email: e.target.value }))
+									}
+								/>
+							</div>
+							<div className="flex flex-col gap-2">
+								<Label htmlFor="phone">Phone</Label>
+								<Input
+									id="phone"
+									name="phone"
+									placeholder="Phone"
+									required
+									value={newClient.phone}
+									onChange={(e) => {
+										const value = e.target.value;
+										const phoneRegex = /^[0-9]*$/;
+										if (value === "" || phoneRegex.test(value)) {
+											value.length <= 10 &&
+												setNewClient((c) => ({ ...c, phone: value }));
+										}
+									}}
+								/>
+							</div>
+							<div className="flex flex-col gap-2">
+								<Label htmlFor="type">Type</Label>
+								<Select
+									required
+									value={newClient.role}
+									onValueChange={(value) =>
+										setNewClient((c) => ({ ...c, role: value }))
+									}>
+									<SelectTrigger>
+										<SelectValue placeholder="Select type" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="buyer">Buyer</SelectItem>
+										<SelectItem value="seller">Seller</SelectItem>
+										<SelectItem value="investor">Investor</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+							<div className="flex justify-end gap-2">
+								<Button
+									type="button"
+									variant="outline"
+									onClick={() => setIsAddDialogOpen(false)}>
+									Cancel
+								</Button>
+								<Button type="submit">
+									{createClientMutation.isPending
+										? "Creating..."
+										: "Create Client"}
+								</Button>
+							</div>
+						</form>
+					</DialogContent>
+				</Dialog>
 			</div>
 
 			{/* Summary Cards */}
@@ -168,9 +251,9 @@ export default function ClientManagement() {
 						<Users className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold">{clients.length}</div>
+						<div className="text-2xl font-bold">{clientsData.length}</div>
 						<p className="text-xs text-muted-foreground">
-							{clients.filter((c) => c.status === "active").length} active
+							{clientsData.filter((c) => c.isActive === true).length} active
 						</p>
 					</CardContent>
 				</Card>
@@ -183,9 +266,9 @@ export default function ClientManagement() {
 					<CardContent>
 						<div className="text-2xl font-bold">{buyers.length}</div>
 						<p className="text-xs text-muted-foreground">
-							Avg budget: $
+							Avg budget: Rs{" "}
 							{(
-								buyers.reduce((sum, b) => sum + (b.budget || 0), 0) /
+								buyers.reduce((sum, b) => sum + (b.propertyValue || 0), 0) /
 								buyers.length /
 								1000
 							).toFixed(0)}
@@ -256,91 +339,142 @@ export default function ClientManagement() {
 			</Card>
 
 			{/* Clients List */}
-			<div className="grid gap-4">
-				{filteredClients.map((client) => (
-					<Card key={client._id}>
-						<CardContent className="p-6">
-							<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-								<div className="flex items-center gap-4">
-									<Avatar className="h-12 w-12">
-										<AvatarImage
-											src={client.avatar || "/placeholder.svg"}
-											alt={client.name}
-										/>
-										<AvatarFallback>
-											{client?.name
-												?.split(" ")
-												.map((n) => n[0])
-												.join("")}
-										</AvatarFallback>
-									</Avatar>
-									<div className="space-y-1">
-										<div className="flex items-center gap-2">
-											<h3 className="font-semibold">{client.name}</h3>
-											{getTypeBadge(client.role)}
-											{getStatusBadge(client.isActive ? "active" : "inactive")}
+			{isLoading && (
+				<div className="grid gap-4">
+					{[1, 2, 3, 4, 5].map((i) => (
+						<Card key={i}>
+							<CardContent className="p-6">
+								<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+									<div className="flex items-center gap-4">
+										<Skeleton className="h-12 w-12 rounded-full" />
+										<div className="space-y-2">
+											<div className="flex items-center gap-2">
+												<Skeleton className="h-5 w-32" />
+												<Skeleton className="h-6 w-16 rounded-full" />
+												<Skeleton className="h-6 w-16 rounded-full" />
+											</div>
+											<div className="flex flex-wrap gap-4">
+												<Skeleton className="h-3 w-40" />
+												<Skeleton className="h-3 w-32" />
+												<Skeleton className="h-3 w-36" />
+											</div>
+											<Skeleton className="h-3 w-48" />
 										</div>
-										<div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-											<div className="flex items-center gap-1">
-												<Mail className="h-3 w-3" />
-												{client.email}
-											</div>
-											<div className="flex items-center gap-1">
-												<Phone className="h-3 w-3" />
-												{client.phone}
-											</div>
-											<div className="flex items-center gap-1">
-												<MapPin className="h-3 w-3" />
-												{client.address.city}, {client.address.state}
-											</div>
+									</div>
+
+									<div className="flex items-center gap-6">
+										<div className="text-center">
+											<Skeleton className="h-6 w-16 mb-1" />
+											<Skeleton className="h-3 w-12" />
 										</div>
-										<div className="text-sm text-gray-500">
-											Agent: {client.name} • Joined{" "}
-											{new Date(client.createdAt).toLocaleDateString()}
+										<div className="text-center">
+											<Skeleton className="h-6 w-12 mb-1" />
+											<Skeleton className="h-3 w-16" />
+										</div>
+										<div className="text-center">
+											<Skeleton className="h-4 w-20 mb-1" />
+											<Skeleton className="h-3 w-16" />
+										</div>
+										<div className="flex gap-2">
+											<Skeleton className="h-9 w-9 rounded-md" />
+											<Skeleton className="h-9 w-9 rounded-md" />
 										</div>
 									</div>
 								</div>
+							</CardContent>
+						</Card>
+					))}
+				</div>
+			)}
+			{!isRefetching && filteredClients.length > 0 && (
+				<div className="grid gap-4">
+					{filteredClients.map((client) => (
+						<Card key={client._id}>
+							<CardContent className="p-6">
+								<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+									<div className="flex items-center gap-4">
+										<Avatar className="h-12 w-12">
+											<AvatarImage
+												src={client.avatar || "/placeholder.svg"}
+												alt={client.name}
+											/>
+											<AvatarFallback>
+												{client?.name
+													?.split(" ")
+													.map((n) => n[0])
+													.join("")}
+											</AvatarFallback>
+										</Avatar>
+										<div className="space-y-1">
+											<div className="flex items-center gap-2">
+												<h3 className="font-semibold">{client.name}</h3>
+												{getTypeBadge(client.role)}
+												{getStatusBadge(
+													client.isActive ? "active" : "inactive"
+												)}
+											</div>
+											<div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+												<div className="flex items-center gap-1">
+													<Mail className="h-3 w-3" />
+													{client.email}
+												</div>
+												<div className="flex items-center gap-1">
+													<Phone className="h-3 w-3" />
+													{client.phone}
+												</div>
+												<div className="flex items-center gap-1">
+													<MapPin className="h-3 w-3" />
+													{client.address.city}, {client.address.state}
+												</div>
+											</div>
+											<div className="text-sm text-gray-500">
+												Agent: {client.name} • Joined{" "}
+												{new Date(client.createdAt).toLocaleDateString()}
+											</div>
+										</div>
+									</div>
 
-								<div className="flex items-center gap-6">
-									{client.role === "buyer" && (
-										<>
-											<div className="text-center">
-												<div className="text-lg font-semibold">
-													Rs{" "}
-													{(
-														Number(client.preferences.priceRange) / 1000
-													).toFixed(0)}
-													K
+									<div className="flex items-center gap-6">
+										{client.role === "buyer" && (
+											<>
+												<div className="text-center">
+													<div className="text-lg font-semibold">
+														Rs{" "}
+														{(
+															Number(client.preferences.priceRange.max) / 1000
+														).toFixed(0)}
+														K
+													</div>
+													<div className="text-xs text-gray-500">Budget</div>
 												</div>
-												<div className="text-xs text-gray-500">Budget</div>
-											</div>
-											<div className="text-center">
-												<div className="text-lg font-semibold">
-													{client.propertiesViewed}
+												<div className="text-center">
+													<div className="text-lg font-semibold">
+														{client.propertiesViewed}
+													</div>
+													<div className="text-xs text-gray-500">Viewed</div>
 												</div>
-												<div className="text-xs text-gray-500">Viewed</div>
-											</div>
-										</>
-									)}
-									{client.role === "seller" && (
-										<>
-											<div className="text-center">
-												<div className="text-lg font-semibold">
-													Rs {(Number(client.propertyValue) / 1000).toFixed(0)}K
+											</>
+										)}
+										{client.role === "seller" && (
+											<>
+												<div className="text-center">
+													<div className="text-lg font-semibold">
+														Rs{" "}
+														{(Number(client.propertyValue) / 1000).toFixed(0)}K
+													</div>
+													<div className="text-xs text-gray-500">
+														Property Value
+													</div>
 												</div>
-												<div className="text-xs text-gray-500">
-													Property Value
+												<div className="text-center">
+													<div className="text-lg font-semibold">
+														{client.propertiesCount || 0}
+													</div>
+													<div className="text-xs text-gray-500">Listed</div>
 												</div>
-											</div>
-											<div className="text-center">
-												<div className="text-lg font-semibold">
-													{client.propertiesListed || 0}
-												</div>
-												<div className="text-xs text-gray-500">Listed</div>
-											</div>
-										</>
-									)}
-									{/* {client.role === "investor" && (
+											</>
+										)}
+										{/* {client.role === "investor" && (
 										<>
 											<div className="text-center">
 												<div className="text-lg font-semibold">
@@ -358,26 +492,27 @@ export default function ClientManagement() {
 											</div>
 										</>
 									)} */}
-									<div className="text-center">
-										<div className="text-sm text-gray-500">Last Active</div>
-										<div className="text-xs">
-											{new Date(client.updatedAt).toLocaleDateString()}
+										<div className="text-center">
+											<div className="text-sm text-gray-500">Last Active</div>
+											<div className="text-xs">
+												{new Date(client.updatedAt).toLocaleDateString()}
+											</div>
+										</div>
+										<div className="flex gap-2">
+											<Button variant="outline" size="sm">
+												<Eye className="h-4 w-4" />
+											</Button>
+											<Button variant="outline" size="sm">
+												<MessageSquare className="h-4 w-4" />
+											</Button>
 										</div>
 									</div>
-									<div className="flex gap-2">
-										<Button variant="outline" size="sm">
-											<Eye className="h-4 w-4" />
-										</Button>
-										<Button variant="outline" size="sm">
-											<MessageSquare className="h-4 w-4" />
-										</Button>
-									</div>
 								</div>
-							</div>
-						</CardContent>
-					</Card>
-				))}
-			</div>
+							</CardContent>
+						</Card>
+					))}
+				</div>
+			)}
 
 			{filteredClients.length === 0 && (
 				<Card>

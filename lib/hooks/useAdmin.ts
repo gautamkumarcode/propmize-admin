@@ -76,11 +76,42 @@ export const useGetAllAgents = () => {
 		staleTime: 5 * 60 * 1000, // 5 minutes
 	});
 };
-export const useGetAllClients = () => {
+export const useGetAllClients = (
+	statusFilter?: string,
+	typeFilter?: string,
+	searchTerm?: string
+) => {
 	return useQuery({
-		queryKey: [QueryKeys.adminClients],
-		queryFn: () => AdminService.getAllClients(),
+		queryKey: [
+			QueryKeys.adminClients,
+			{ statusFilter, typeFilter, searchTerm },
+		],
+		queryFn: () =>
+			AdminService.getAllClients(statusFilter, typeFilter, searchTerm),
 		select: (data) => data.data,
 		staleTime: 5 * 60 * 1000, // 5 minutes
 	});
 };
+
+export const useCreateClient = () => {
+	return useMutation({
+		mutationKey: [QueryKeys.adminClients],
+		mutationFn: (clientData: {
+			name: string;
+			email: string;
+			phone: string;
+			role: string;
+		}) =>
+			AdminService.createClient(
+				clientData.name,
+				clientData.email,
+				clientData.phone,
+				clientData.role
+			),
+		onSuccess: () => {
+			// Invalidate and refetch
+			queryClient.invalidateQueries({ queryKey: [QueryKeys.adminClients] });
+		},
+	});
+};
+
