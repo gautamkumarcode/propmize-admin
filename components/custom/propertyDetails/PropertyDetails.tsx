@@ -128,7 +128,7 @@ const PropertyDetails = () => {
 												Price:
 											</span>
 											<span className="font-medium text-blue-600 dark:text-blue-400">
-												Rs {property.price?.toLocaleString()}
+												Rs {(property.price ?? 0).toLocaleString()}
 											</span>
 										</div>
 										<div className="flex justify-between">
@@ -368,7 +368,10 @@ const PropertyDetails = () => {
 															Base Price:
 														</span>
 														<span className="font-medium">
-															Rs {property.pricing?.basePrice?.toLocaleString()}
+															Rs{" "}
+															{(
+																property.pricing?.basePrice ?? 0
+															).toLocaleString()}
 														</span>
 													</div>
 													{property.pricing?.maintenanceCharges && (
@@ -378,7 +381,9 @@ const PropertyDetails = () => {
 															</span>
 															<span className="font-medium">
 																Rs{" "}
-																{property.pricing.maintenanceCharges.toLocaleString()}
+																{(
+																	property.pricing?.maintenanceCharges ?? 0
+																).toLocaleString()}
 															</span>
 														</div>
 													)}
@@ -389,7 +394,9 @@ const PropertyDetails = () => {
 															</span>
 															<span className="font-medium">
 																Rs{" "}
-																{property.pricing.securityDeposit.toLocaleString()}
+																{(
+																	property.pricing?.securityDeposit ?? 0
+																).toLocaleString()}
 															</span>
 														</div>
 													)}

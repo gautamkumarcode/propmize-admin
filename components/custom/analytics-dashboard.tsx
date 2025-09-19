@@ -168,7 +168,7 @@ export default function AnalyticsDashboard() {
 					</CardHeader>
 					<CardContent>
 						<div className="text-2xl font-bold">
-							{"Rs" + data.keyMetrics.totalRevenue.toLocaleString()}
+							{"Rs" + (data.keyMetrics.totalRevenue ?? 0).toLocaleString()}
 						</div>
 						<p className="text-xs text-muted-foreground">
 							<span className="text-green-600 flex items-center gap-1">
@@ -195,7 +195,7 @@ export default function AnalyticsDashboard() {
 					</CardHeader>
 					<CardContent>
 						<div className="text-2xl font-bold">
-							{data.keyMetrics.pageViews.toLocaleString()}
+							{(data.keyMetrics.pageViews ?? 0).toLocaleString()}
 						</div>
 						<p className="text-xs text-muted-foreground">
 							<span className="text-red-600 flex items-center gap-1">
@@ -260,7 +260,7 @@ export default function AnalyticsDashboard() {
 										<YAxis />
 										<Tooltip
 											formatter={(value) => [
-												`$${(value as number).toLocaleString()}`,
+												`$${((value as number) ?? 0).toLocaleString()}`,
 												"Revenue",
 											]}
 										/>
@@ -392,7 +392,7 @@ export default function AnalyticsDashboard() {
 							</CardHeader>
 							<CardContent>
 								<div className="text-2xl font-bold">
-									${data.propertiesMetrics.avgPrice.toLocaleString()}
+									${(data.propertiesMetrics.avgPrice ?? 0).toLocaleString()}
 								</div>
 								<p className="text-xs text-muted-foreground">
 									Across all properties
@@ -435,7 +435,7 @@ export default function AnalyticsDashboard() {
 											</div>
 											<div className="text-right">
 												<div className="font-semibold">
-													${location.avgPrice.toLocaleString()}
+													${(location.avgPrice ?? 0).toLocaleString()}
 												</div>
 												<div className="text-sm text-gray-500">avg price</div>
 											</div>

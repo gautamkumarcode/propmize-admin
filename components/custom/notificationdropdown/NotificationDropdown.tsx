@@ -218,7 +218,10 @@ export default function NotificationDropdown({
 												)}
 												{notification.metadata.amount && (
 													<span className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-1 rounded ml-1">
-														₹{notification.metadata.amount.toLocaleString()}
+														₹
+														{(
+															notification.metadata.amount ?? 0
+														).toLocaleString()}
 													</span>
 												)}
 											</div>

@@ -231,7 +231,7 @@ export default function PropertyListings() {
 						</CardHeader>
 						<CardContent className="space-y-4">
 							<div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-								Rs {property.price.toLocaleString()}
+								Rs {(property.price ?? 0).toLocaleString()}
 							</div>
 
 							<div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
