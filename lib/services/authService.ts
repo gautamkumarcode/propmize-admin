@@ -19,9 +19,9 @@ export class AuthService {
 
 		// Store tokens in localStorage
 		if (response.data.success) {
-			const { accessToken, refreshToken } = response.data.data.tokens;
-			safeLocalStorage.setItem("accessToken", accessToken);
-			safeLocalStorage.setItem("refreshToken", refreshToken);
+			const { accessToken, refreshToken } = response.data.data;
+			safeLocalStorage.setItem("adminAccessToken", accessToken);
+			safeLocalStorage.setItem("adminRefreshToken", refreshToken);
 		}
 
 		return response.data;
@@ -37,9 +37,9 @@ export class AuthService {
 
 		// Store tokens in localStorage
 		if (response.data.success) {
-			const { accessToken, refreshToken } = response.data.data.tokens;
-			safeLocalStorage.setItem("accessToken", accessToken);
-			safeLocalStorage.setItem("refreshToken", refreshToken);
+			const { accessToken, refreshToken } = response.data.data;
+			safeLocalStorage.setItem("adminAccessToken", accessToken);
+			safeLocalStorage.setItem("adminRefreshToken", refreshToken);
 		}
 
 		return response.data;
@@ -54,8 +54,8 @@ export class AuthService {
 		} catch (error) {
 		} finally {
 			// Always clear tokens
-			safeLocalStorage.removeItem("accessToken");
-			safeLocalStorage.removeItem("refreshToken");
+			safeLocalStorage.removeItem("adminAccessToken");
+			safeLocalStorage.removeItem("adminRefreshToken");
 		}
 		return { success: true, message: "Logged out successfully", data: null };
 	}
@@ -64,7 +64,7 @@ export class AuthService {
 	 * Refresh access token
 	 */
 	static async refreshToken(): Promise<ApiResponse<{ accessToken: string }>> {
-		const refreshToken = safeLocalStorage.getItem("refreshToken");
+		const refreshToken = safeLocalStorage.getItem("adminRefreshToken");
 
 		if (
 			!refreshToken ||
@@ -72,8 +72,8 @@ export class AuthService {
 			refreshToken === "undefined"
 		) {
 			// Clean up invalid tokens
-			safeLocalStorage.removeItem("accessToken");
-			safeLocalStorage.removeItem("refreshToken");
+			safeLocalStorage.removeItem("adminAccessToken");
+			safeLocalStorage.removeItem("adminRefreshToken");
 			throw new Error("No refresh token available");
 		}
 
@@ -82,7 +82,7 @@ export class AuthService {
 		});
 
 		if (response.data.success) {
-			safeLocalStorage.setItem("accessToken", response.data.data.accessToken);
+			safeLocalStorage.setItem("adminAccessToken", response.data.data.accessToken);
 		}
 
 		return response.data;
@@ -138,13 +138,13 @@ export class AuthService {
 	 * Check if user is authenticated
 	 */
 	static isAuthenticated(): boolean {
-		const token = safeLocalStorage.getItem("accessToken");
+		const token = safeLocalStorage.getItem("adminAccessToken");
 		const hasValidToken = !!token && token !== "null" && token !== "undefined";
 
 		// Clean up invalid tokens
 		if (!hasValidToken && token) {
-			safeLocalStorage.removeItem("accessToken");
-			safeLocalStorage.removeItem("refreshToken");
+			safeLocalStorage.removeItem("adminAccessToken");
+			safeLocalStorage.removeItem("adminRefreshToken");
 		}
 
 		return hasValidToken;
@@ -154,7 +154,7 @@ export class AuthService {
 	 * Get stored access token
 	 */
 	static getAccessToken(): string | null {
-		const token = safeLocalStorage.getItem("accessToken");
+		const token = safeLocalStorage.getItem("adminAccessToken");
 		return token && token !== "null" && token !== "undefined" ? token : null;
 	}
 

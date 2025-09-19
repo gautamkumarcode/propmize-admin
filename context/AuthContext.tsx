@@ -46,15 +46,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const login = (user: User, accessToken: string, refreshToken: string) => {
 		setUser(user);
 		setIsAuthenticated(true);
-		localStorage.setItem("accessToken", accessToken);
-		localStorage.setItem("refreshToken", refreshToken);
+		localStorage.setItem("adminAccessToken", accessToken);
+		localStorage.setItem("adminRefreshToken", refreshToken);
 	};
 
 	const logout = () => {
 		setUser(null);
 		setIsAuthenticated(false);
-		localStorage.removeItem("accessToken");
-		localStorage.removeItem("refreshToken");
+		localStorage.removeItem("adminAccessToken");
+		localStorage.removeItem("adminRefreshToken");
 	};
 
 	return (

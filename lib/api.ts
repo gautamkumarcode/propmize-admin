@@ -24,7 +24,7 @@ const apiClient: AxiosInstance = axios.create({
 
 apiClient.interceptors.request.use(
 	(config: CustomInternalAxiosRequestConfig) => {
-		const token = safeLocalStorage.getItem("accessToken");
+		const token = safeLocalStorage.getItem("adminAccessToken");
 		if (token && config.headers) {
 			config.headers["Authorization"] = `Bearer ${token}`;
 		}

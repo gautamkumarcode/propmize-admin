@@ -1,0 +1,286 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { NotificationTypes } from "@/lib/types/notificationtypes";
+import {
+	Bell,
+	Check,
+	Home,
+	MessageCircle,
+	Settings,
+	Trash2,
+	X,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
+
+interface NotificationDropdownProps {
+	isOpen: boolean;
+	onClose: () => void;
+	notifications: NotificationTypes[];
+	onMarkAsRead: (id: string) => void;
+	onMarkAllAsRead: () => void;
+	onDeleteNotification: (id: string) => void;
+	onNotificationClick: (notification: NotificationTypes) => void;
+}
+
+const NotificationIcon = ({ type }: { type: NotificationTypes["type"] }) => {
+	const iconProps = { size: 16, className: "text-white" };
+
+	switch (type) {
+		case "property":
+			return <Home {...iconProps} />;
+		case "message":
+			return <MessageCircle {...iconProps} />;
+		case "success":
+			return <Check {...iconProps} />;
+		case "warning":
+			return <Bell {...iconProps} />;
+		case "error":
+			return <X {...iconProps} />;
+		case "system":
+			return <Settings {...iconProps} />;
+		default:
+			return <Bell {...iconProps} />;
+	}
+};
+
+const getNotificationStyles = (type: NotificationTypes["type"]) => {
+	switch (type) {
+		case "property":
+			return "bg-blue-500";
+		case "message":
+			return "bg-green-500";
+		case "success":
+			return "bg-emerald-500";
+		case "warning":
+			return "bg-yellow-500";
+		case "error":
+			return "bg-red-500";
+		case "system":
+			return "bg-gray-500";
+		default:
+			return "bg-blue-500";
+	}
+};
+
+const formatTimeAgo = (date: Date) => {
+	const now = new Date();
+	const d = new Date(date);
+	if (isNaN(d.getTime())) return "";
+	const diffInMinutes = Math.floor((now.getTime() - d.getTime()) / (1000 * 60));
+
+	if (diffInMinutes < 1) return "Just now";
+	if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+
+	const diffInHours = Math.floor(diffInMinutes / 60);
+	if (diffInHours < 24) return `${diffInHours}h ago`;
+
+	const diffInDays = Math.floor(diffInHours / 24);
+	if (diffInDays < 7) return `${diffInDays}d ago`;
+
+	return d.toLocaleDateString();
+};
+
+export default function NotificationDropdown({
+	isOpen,
+	onClose,
+	notifications,
+	onMarkAsRead,
+	onMarkAllAsRead,
+	onDeleteNotification,
+	onNotificationClick,
+}: NotificationDropdownProps) {
+	const dropdownRef = useRef<HTMLDivElement>(null);
+	const router = useRouter();
+	// const { userMode } = useAuthStore();
+
+	// Close dropdown when clicking outside
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (
+				dropdownRef.current &&
+				!dropdownRef.current.contains(event.target as Node)
+			) {
+				onClose();
+			}
+		};
+
+		if (isOpen) {
+			document.addEventListener("mousedown", handleClickOutside);
+		}
+
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, [isOpen, onClose]);
+
+	if (!isOpen) return null;
+
+	const unreadCount = notifications.filter((n) => !n.read).length;
+	const sortedNotifications = [...notifications].sort(
+		(a, b) =>
+			new Date(b.createdAt ?? 0).getTime() -
+			new Date(a.createdAt ?? 0).getTime()
+	);
+
+	return (
+		<div
+			ref={dropdownRef}
+			className="absolute w-[20rem] md:w-[30rem] -right-16 mt-2  bg-white dark:bg-[#0F0F12] text-gray-900 dark:text-white rounded-lg shadow-xl border border-gray-200 dark:border-[#1F1F23] z-50 max-h-[60vh] overflow-hidden">
+			{/* Header */}
+			<div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-[#1F1F23] bg-gray-50 dark:bg-[#141418]">
+				<div className="flex items-center space-x-2">
+					<Bell size={18} className="text-gray-600 dark:text-gray-300" />
+					<h3 className="font-semibold text-gray-900 dark:text-white">
+						Notifications
+					</h3>
+					{unreadCount > 0 && (
+						<span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
+							{unreadCount}
+						</span>
+					)}
+				</div>
+				<div className="flex items-center space-x-2">
+					{unreadCount > 0 && (
+						<Button
+							onClick={onMarkAllAsRead}
+							variant="ghost"
+							size="sm"
+							className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+							Mark all read
+						</Button>
+					)}
+					<Button
+						onClick={onClose}
+						variant="ghost"
+						size="sm"
+						className="text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100">
+						<X size={16} />
+					</Button>
+				</div>
+			</div>
+
+			{/* Notifications List */}
+			<div className="max-h-80 overflow-y-auto">
+				{sortedNotifications.length === 0 ? (
+					<div className="flex flex-col items-center justify-center py-8 text-gray-500 dark:text-gray-400">
+						<Bell size={48} className="mb-2 opacity-30" />
+						<p className="text-sm">No notifications yet</p>
+						<p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+							We&apos;ll notify you when something important happens
+						</p>
+					</div>
+				) : (
+					sortedNotifications.map((notification) => (
+						<div
+							key={notification._id}
+							className={`flex items-start space-x-3 p-4 border-b border-gray-100 dark:border-[#1F1F23] hover:bg-gray-50 dark:hover:bg-[#141418] cursor-pointer transition-colors ${
+								!notification.read ? "bg-blue-50 dark:bg-blue-900/20" : ""
+							}`}
+							onClick={() => onNotificationClick(notification)}>
+							{/* Icon */}
+							<div
+								className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${getNotificationStyles(
+									notification.type
+								)}`}>
+								<NotificationIcon type={notification.type} />
+							</div>
+
+							{/* Content */}
+							<div className="flex-1 min-w-0">
+								<div className="flex items-start justify-between">
+									<div className="flex-1">
+										<p
+											className={`text-sm ${
+												!notification.read
+													? "font-semibold text-gray-900 dark:text-white"
+													: "font-medium text-gray-700 dark:text-gray-300"
+											}`}>
+											{notification.title}
+										</p>
+										<p className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
+											{notification.message}
+										</p>
+
+										{/* Metadata */}
+										{notification.metadata && (
+											<div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+												{notification.metadata.propertyTitle && (
+													<span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+														{notification.metadata.propertyTitle}
+													</span>
+												)}
+												{notification.metadata.senderName && (
+													<span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded ml-1">
+														From: {notification.metadata.senderName}
+													</span>
+												)}
+												{notification.metadata.amount && (
+													<span className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-1 rounded ml-1">
+														₹{notification.metadata.amount.toLocaleString()}
+													</span>
+												)}
+											</div>
+										)}
+									</div>
+
+									{/* Actions */}
+									<div className="flex items-center space-x-1 ml-2">
+										{!notification.read && (
+											<Button
+												onClick={(e) => {
+													e.stopPropagation();
+													onMarkAsRead(notification._id);
+												}}
+												variant="ghost"
+												size="sm"
+												className="p-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+												<Check size={14} />
+											</Button>
+										)}
+										<Button
+											onClick={(e) => {
+												e.stopPropagation();
+												onDeleteNotification(notification._id);
+											}}
+											variant="ghost"
+											size="sm"
+											className="p-1 text-gray-400 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400">
+											<Trash2 size={14} />
+										</Button>
+									</div>
+								</div>
+
+								<div className="flex items-center justify-between mt-2">
+									<span className="text-xs text-gray-400 dark:text-gray-500">
+										{formatTimeAgo(notification.createdAt ?? new Date())}
+									</span>
+									{!notification.read && (
+										<div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full"></div>
+									)}
+								</div>
+							</div>
+						</div>
+					))
+				)}
+			</div>
+
+			{/* Footer */}
+			{sortedNotifications.length > 0 && (
+				<div className="px-4 py-3 border-t border-gray-200 dark:border-[#1F1F23] bg-gray-50 dark:bg-[#141418]">
+					<Button
+						variant="ghost"
+						size="sm"
+						className="w-full text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
+						onClick={() => {
+							onClose();
+							router.push("/dashboard/notifications");
+						}}>
+						View All Notifications
+					</Button>
+				</div>
+			)}
+		</div>
+	);
+}
