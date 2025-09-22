@@ -281,39 +281,37 @@ const AuthModal: React.FC<AuthModalProps> = ({
 	// };
 
 	if (!isOpen) return null;
-
+	// ...existing code...
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 bg-opacity-50">
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 bg-opacity-50 dark:bg-black/70">
 			<div className="relative w-full max-w-md mx-4">
-				<Card className="w-full">
+				<Card className="w-full bg-white dark:bg-gray-900 dark:border-gray-800">
 					<CardHeader className="relative mb-4">
 						<button
 							onClick={onClose}
-							className="absolute right-4 top-4 p-1 rounded-full hover:bg-gray-100">
-							<X className="h-5 w-5" />
+							className="absolute right-4 top-4 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
+							<X className="h-5 w-5 text-gray-900 dark:text-gray-100" />
 						</button>
-						<CardTitle className="text-center">Sign In</CardTitle>
+						<CardTitle className="text-center text-gray-900 dark:text-gray-100">
+							Sign In
+						</CardTitle>
 					</CardHeader>
 					<CardContent className="space-y-4">
-						{/* <GoogleOAuthProvider
-							clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
-							<GoogleLogi
-								onSuccess={handleSuccess}
-								onError={() => console.log("Login Failed")}
-							/>
-						</GoogleOAuthProvider> */}
 						<div className="flex items-center gap-3 pt-2">
-							<hr className="flex-grow border-gray-300" />
-							<span className="text-gray-500">or</span>
-							<hr className="flex-grow border-gray-300" />
+							<hr className="flex-grow border-gray-300 dark:border-gray-700" />
+							<span className="text-gray-500 dark:text-gray-400">or</span>
+							<hr className="flex-grow border-gray-300 dark:border-gray-700" />
 						</div>
 						{!step.isOtpSent ? (
 							<form onSubmit={handleSendOtp} className="space-y-4">
 								<div className="space-y-2">
-									<Label htmlFor="phone">Phone Number</Label>
-
+									<Label
+										htmlFor="phone"
+										className="text-gray-900 dark:text-gray-100">
+										Phone Number
+									</Label>
 									<div className="relative">
-										<span className="absolute text-sm z-30 left-3 top-1/2 -translate-y-1/2 text-gray-900">
+										<span className="absolute text-sm z-30 left-3 top-1/2 -translate-y-1/2 text-gray-900 dark:text-gray-100">
 											+91
 										</span>
 										<Input
@@ -330,15 +328,14 @@ const AuthModal: React.FC<AuthModalProps> = ({
 													setStep({ ...step, phone: value });
 												}
 											}}
-											className="pl-10"
+											className="pl-10 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
 											required
 										/>
 									</div>
 								</div>
-
 								<Button
 									type="submit"
-									className="w-full bg-blue-600 hover:bg-blue-900"
+									className="w-full bg-blue-600 hover:bg-blue-900 dark:bg-blue-700 dark:hover:bg-blue-900"
 									disabled={loading}>
 									{loading ? "Sending OTP..." : "Send OTP"}
 								</Button>
@@ -346,59 +343,67 @@ const AuthModal: React.FC<AuthModalProps> = ({
 						) : (
 							<form onSubmit={handleVerifyOtp} className="space-y-4">
 								<div className="space-y-2">
-									<span className="text-sm text-green-600 ">
+									<span className="text-sm text-green-600 dark:text-green-400">
 										{" "}
 										Your OTP is: {step.recievedOtp}
 									</span>
-
-									<label className="flex justify-center text-sm font-medium text-gray-700">
+									<label className="flex justify-center text-sm font-medium text-gray-700 dark:text-gray-300">
 										{isNewUser ? "Welcome" : "Welcome back!"} +91 {step.phone}
 									</label>
-
 									{isNewUser && (
 										<DropdownMenu>
-											<Label htmlFor="role">Role</Label>
+											<Label
+												htmlFor="role"
+												className="text-gray-900 dark:text-gray-100">
+												Role
+											</Label>
 											<DropdownMenuTrigger asChild>
 												<Button
 													variant="outline"
-													className="w-full justify-between capitalize">
+													className="w-full justify-between capitalize bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
 													{step.role || "Select role"}
 													<ChevronDown className="h-4 w-4" />
 												</Button>
 											</DropdownMenuTrigger>
-											<DropdownMenuContent className="w-[19rem]">
+											<DropdownMenuContent className="w-[19rem] bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
 												<DropdownMenuItem
-													onClick={() => setStep({ ...step, role: "admin" })}>
+													onClick={() => setStep({ ...step, role: "admin" })}
+													className="text-gray-900 dark:text-gray-100">
 													Admin
 												</DropdownMenuItem>
 												<DropdownMenuItem
-													onClick={() => setStep({ ...step, role: "agent" })}>
+													onClick={() => setStep({ ...step, role: "agent" })}
+													className="text-gray-900 dark:text-gray-100">
 													Agent
 												</DropdownMenuItem>
 											</DropdownMenuContent>
 										</DropdownMenu>
 									)}
-									<Label htmlFor="otp">Enter OTP</Label>
+									<Label
+										htmlFor="otp"
+										className="text-gray-900 dark:text-gray-100">
+										Enter OTP
+									</Label>
 									<Input
 										id="otp"
 										type="text"
 										placeholder="Enter OTP received"
 										value={step.otp}
 										onChange={(e) => setStep({ ...step, otp: e.target.value })}
+										className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
 										required
 									/>
 								</div>
 								<Button
 									type="submit"
-									className="w-full bg-blue-600 hover:bg-blue-900"
+									className="w-full bg-blue-600 hover:bg-blue-900 dark:bg-blue-700 dark:hover:bg-blue-900"
 									disabled={loading}>
 									{loading ? "Verifying..." : "Verify & Login"}
 								</Button>
-
 								<Button
 									type="button"
 									variant="ghost"
-									className="w-full"
+									className="w-full text-gray-900 dark:text-gray-100"
 									onClick={() =>
 										setStep({
 											phone: "",
@@ -417,6 +422,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
 			</div>
 		</div>
 	);
+	// ...existing code...
 };
 
 export default AuthModal;

@@ -14,11 +14,10 @@ import {
 	Users,
 } from "lucide-react";
 import Link from "next/link";
+import DashboardSkeleton from "../custom/skeleton/Dashboard";
 
 export default function Content() {
-	const { data: dashboardData } = useAdminDashboard();
-
-	console.log("Dashboard Data:", dashboardData);
+	const { data: dashboardData, isLoading } = useAdminDashboard();
 
 	const stats = dashboardData?.overview || {
 		totalProperties: 0,
@@ -52,6 +51,9 @@ export default function Content() {
 				return <Badge variant="secondary">{status}</Badge>;
 		}
 	};
+	if (isLoading) {
+		return <DashboardSkeleton />;
+	}
 
 	return (
 		<div className="space-y-6">

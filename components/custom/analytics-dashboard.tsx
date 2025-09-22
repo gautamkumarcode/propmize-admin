@@ -38,14 +38,14 @@ import {
 	YAxis,
 } from "recharts";
 
-import { Skeleton } from "@/components/ui/skeleton";
+import AnalyticsDashboardSkeleton from "./skeleton/Analytics";
 
 export default function AnalyticsDashboard() {
 	const { data: data, isLoading, error } = useGetAnalyticsDashboard();
 
-	if (isLoading) {
-		return <Skeleton className="h-[600px] w-full" />;
-	}
+	  if (isLoading) {
+			return <AnalyticsDashboardSkeleton />;
+		}
 	if (error || !data) {
 		return <div className="text-red-500">Failed to load analytics.</div>;
 	}
