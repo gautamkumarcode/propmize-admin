@@ -10,8 +10,7 @@ interface CustomInternalAxiosRequestConfig extends InternalAxiosRequestConfig {
 	_retry?: boolean;
 }
 
-const API_BASE_URL =
-	process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const apiClient: AxiosInstance = axios.create({
 	baseURL: API_BASE_URL,

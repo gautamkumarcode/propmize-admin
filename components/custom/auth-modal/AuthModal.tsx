@@ -2,21 +2,15 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuthContext } from "@/context/AuthContext";
 import { toast } from "@/hooks/use-toast";
-
 import apiClient from "@/lib/api";
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { ChevronDown, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
@@ -62,15 +56,20 @@ const AuthModal: React.FC<AuthModalProps> = ({
 		role: "",
 		recievedOtp: "",
 	});
-	const [isNewUser, setIsNewUser] = useState(false);
-	const [loading, setLoading] = useState(false);
 
 	// const handlePostAuthRedirect = () => {
 	// 	if (redirectTo) {
 	// 		if (redirectTo.startsWith("/seller")) {
 	// 			setUserMode("seller");
-	// 		} else if (redirectTo.startsWith("/buyer")) {
-	// 			setUserMode("buyer");
+	const [isNewUser, setIsNewUser] = useState(false);
+	const [loading, setLoading] = useState(false);
+	const [email, setEmail] = useState("");
+	const [password, setPassword] = useState("");
+
+	const handleEmailPasswordLogin = (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		loginMutation.mutate({ email, password });
+	};
 	// 		}
 	// 		setTimeout(() => {
 	// 			router.push(redirectTo);
@@ -79,9 +78,9 @@ const AuthModal: React.FC<AuthModalProps> = ({
 	// 	onClose();
 	// };
 
-	const _loginMutation = useMutation({
+	const loginMutation = useMutation({
 		mutationFn: async (data: LoginData) => {
-			const response = await apiClient.post("/auth/login", data);
+			const response = await apiClient.post("/admin/login", data);
 			return response.data;
 		},
 		onSuccess: (data) => {
@@ -137,115 +136,115 @@ const AuthModal: React.FC<AuthModalProps> = ({
 		},
 	});
 
-	const handleSendOtp = async (e: React.FormEvent) => {
-		e.preventDefault();
-		if (!step.phone) {
-			toast({
-				title: "Validation Error",
-				description: "Enter phone number",
-				variant: "destructive",
-			});
-			return;
-		}
-		const phoneRegex = /^[6-9]\d{9}$/;
-		if (!phoneRegex.test(step.phone)) {
-			toast({
-				title: "Validation Error",
-				description: "Enter a valid phone number",
-				variant: "destructive",
-			});
-			return;
-		}
-		setLoading(true);
-		try {
-			const res = await apiClient.post("/auth/send-otp", {
-				phone: step.phone,
-			});
-			setIsNewUser(res.data.data.isNewUser);
-			setStep((prev) => ({
-				...prev,
-				isOtpSent: true,
-				recievedOtp: res.data.data.otp,
-			}));
-			toast({
-				title: "OTP sent",
-				description: "Check your SMS for the OTP.",
-			});
+	// const handleSendOtp = async (e: React.FormEvent) => {
+	// 	e.preventDefault();
+	// 	if (!step.phone) {
+	// 		toast({
+	// 			title: "Validation Error",
+	// 			description: "Enter phone number",
+	// 			variant: "destructive",
+	// 		});
+	// 		return;
+	// 	}
+	// 	const phoneRegex = /^[6-9]\d{9}$/;
+	// 	if (!phoneRegex.test(step.phone)) {
+	// 		toast({
+	// 			title: "Validation Error",
+	// 			description: "Enter a valid phone number",
+	// 			variant: "destructive",
+	// 		});
+	// 		return;
+	// 	}
+	// 	setLoading(true);
+	// 	try {
+	// 		const res = await apiClient.post("/auth/send-otp", {
+	// 			phone: step.phone,
+	// 		});
+	// 		setIsNewUser(res.data.data.isNewUser);
+	// 		setStep((prev) => ({
+	// 			...prev,
+	// 			isOtpSent: true,
+	// 			recievedOtp: res.data.data.otp,
+	// 		}));
+	// 		toast({
+	// 			title: "OTP sent",
+	// 			description: "Check your SMS for the OTP.",
+	// 		});
 
-			if (res.data.success !== true) {
-				toast({
-					title: "Error",
-					description: "Failed to send OTP",
-					variant: "destructive",
-				});
-			}
-		} catch (error: unknown) {
-			const axiosError = error as AxiosError;
-			const errorData = axiosError.response?.data;
-			const errorMessage =
-				typeof errorData === "object" &&
-				errorData !== null &&
-				"error" in errorData
-					? (errorData as { error: string }).error
-					: "Failed to send OTP";
-			toast({
-				title: "Error",
-				description: errorMessage,
-				variant: "destructive",
-			});
-		}
-		setLoading(false);
-	};
+	// 		if (res.data.success !== true) {
+	// 			toast({
+	// 				title: "Error",
+	// 				description: "Failed to send OTP",
+	// 				variant: "destructive",
+	// 			});
+	// 		}
+	// 	} catch (error: unknown) {
+	// 		const axiosError = error as AxiosError;
+	// 		const errorData = axiosError.response?.data;
+	// 		const errorMessage =
+	// 			typeof errorData === "object" &&
+	// 			errorData !== null &&
+	// 			"error" in errorData
+	// 				? (errorData as { error: string }).error
+	// 				: "Failed to send OTP";
+	// 		toast({
+	// 			title: "Error",
+	// 			description: errorMessage,
+	// 			variant: "destructive",
+	// 		});
+	// 	}
+	// 	setLoading(false);
+	// };
 
-	const handleVerifyOtp = async (e: React.FormEvent) => {
-		e.preventDefault();
-		if (!step.otp) {
-			toast({
-				title: "Validation Error",
-				description: "Enter OTP",
-				variant: "destructive",
-			});
-			return;
-		}
-		setLoading(true);
-		const payload = {
-			phone: step.phone,
-			otp: step.otp,
-			...(isNewUser && { role: step.role }),
-		};
+	// const handleVerifyOtp = async (e: React.FormEvent) => {
+	// 	e.preventDefault();
+	// 	if (!step.otp) {
+	// 		toast({
+	// 			title: "Validation Error",
+	// 			description: "Enter OTP",
+	// 			variant: "destructive",
+	// 		});
+	// 		return;
+	// 	}
+	// 	setLoading(true);
+	// 	const payload = {
+	// 		phone: step.phone,
+	// 		otp: step.otp,
+	// 		...(isNewUser && { role: step.role }),
+	// 	};
 
-		try {
-			const response = await apiClient.post("/auth/verify-otp", payload);
+	// 	try {
+	// 		const response = await apiClient.post("/auth/verify-otp", payload);
 
-			const { user, tokens } = response.data.data;
-			login(user, tokens.accessToken, tokens.refreshToken);
-			queryClient.invalidateQueries({ queryKey: ["user"] });
-			toast({
-				title: "Login successful",
-				description: `Welcome, ${user.name || user.phone}!`,
-			});
-			// if (redirectTo) {
-			// 	if (redirectTo.startsWith("/seller")) setUserMode("seller");
-			// 	else if (redirectTo.startsWith("/buyer")) setUserMode("buyer");
-			// 	setTimeout(() => router.push(redirectTo), 100);
-			// }
-			onClose();
-		} catch (error: unknown) {
-			const errorMessage =
-				error instanceof AxiosError
-					? (error.response?.data as { error?: string })?.error ||
-					  (typeof error.response?.data === "string"
-							? error.response.data
-							: "Invalid OTP")
-					: "Invalid OTP";
-			toast({
-				title: "Error",
-				description: errorMessage,
-				variant: "destructive",
-			});
-		}
-		setLoading(false);
-	};
+	// 		const { user, tokens } = response.data.data;
+	// 		login(user, tokens.accessToken, tokens.refreshToken);
+	// 		queryClient.invalidateQueries({ queryKey: ["user"] });
+	// 		toast({
+	// 			title: "Login successful",
+	// 			description: `Welcome, ${user.name || user.phone}!`,
+	// 		});
+	// 		// if (redirectTo) {
+	// 		// 	if (redirectTo.startsWith("/seller")) setUserMode("seller");
+	// 		// 	else if (redirectTo.startsWith("/buyer")) setUserMode("buyer");
+	// 		// 	setTimeout(() => router.push(redirectTo), 100);
+	// 		// }
+	// 		onClose();
+	// 	} catch (error: unknown) {
+	// 		const errorMessage =
+	// 			error instanceof AxiosError
+	// 				? (error.response?.data as { error?: string })?.error ||
+	// 				  (typeof error.response?.data === "string"
+	// 						? error.response.data
+	// 						: "Invalid OTP")
+	// 				: "Invalid OTP";
+	// 		toast({
+	// 			title: "Error",
+	// 			description: errorMessage,
+	// 			variant: "destructive",
+	// 		});
+	// 	}
+	// 	setLoading(false);
+	// };
 
 	// const handleSuccess = async (response: CredentialResponse) => {
 	//     if (!response.credential) {
@@ -298,125 +297,50 @@ const AuthModal: React.FC<AuthModalProps> = ({
 					</CardHeader>
 					<CardContent className="space-y-4">
 						<div className="flex items-center gap-3 pt-2">
-							<hr className="flex-grow border-gray-300 dark:border-gray-700" />
-							<span className="text-gray-500 dark:text-gray-400">or</span>
-							<hr className="flex-grow border-gray-300 dark:border-gray-700" />
-						</div>
-						{!step.isOtpSent ? (
-							<form onSubmit={handleSendOtp} className="space-y-4">
-								<div className="space-y-2">
-									<Label
-										htmlFor="phone"
-										className="text-gray-900 dark:text-gray-100">
-										Phone Number
-									</Label>
-									<div className="relative">
-										<span className="absolute text-sm z-30 left-3 top-1/2 -translate-y-1/2 text-gray-900 dark:text-gray-100">
-											+91
-										</span>
+							<form onSubmit={handleEmailPasswordLogin} className="w-full">
+								<div className="space-y-4">
+									<div className="space-y-2">
+										<Label
+											htmlFor="email"
+											className="text-gray-900 dark:text-gray-100">
+											Email Address
+										</Label>
 										<Input
-											id="phone"
-											type="tel"
-											placeholder="Enter phone number"
-											value={step.phone}
-											onChange={(e) => {
-												let value = e.target.value.replace(/\D/g, "");
-												if (value.length >= 10) {
-													value = value.slice(-10);
-												}
-												if (value.length <= 10) {
-													setStep({ ...step, phone: value });
-												}
-											}}
-											className="pl-10 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+											id="email"
+											type="email"
+											placeholder="Enter your email"
+											value={email}
+											onChange={(e) => setEmail(e.target.value)}
+											className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
 											required
 										/>
 									</div>
+
+									<div className="space-y-2">
+										<Label
+											htmlFor="password"
+											className="text-gray-900 dark:text-gray-100">
+											Password
+										</Label>
+										<Input
+											id="password"
+											type="password"
+											placeholder="Enter your password"
+											value={password}
+											onChange={(e) => setPassword(e.target.value)}
+											className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+											required
+										/>
+									</div>
+									<Button
+										type="submit"
+										disabled={loginMutation.isPending}
+										className="w-full bg-blue-600 hover:bg-blue-900 dark:bg-blue-700 dark:hover:bg-blue-900">
+										{loginMutation.isPending ? "Logging in..." : "Login"}
+									</Button>
 								</div>
-								<Button
-									type="submit"
-									className="w-full bg-blue-600 hover:bg-blue-900 dark:bg-blue-700 dark:hover:bg-blue-900"
-									disabled={loading}>
-									{loading ? "Sending OTP..." : "Send OTP"}
-								</Button>
 							</form>
-						) : (
-							<form onSubmit={handleVerifyOtp} className="space-y-4">
-								<div className="space-y-2">
-									<span className="text-sm text-green-600 dark:text-green-400">
-										{" "}
-										Your OTP is: {step.recievedOtp}
-									</span>
-									<label className="flex justify-center text-sm font-medium text-gray-700 dark:text-gray-300">
-										{isNewUser ? "Welcome" : "Welcome back!"} +91 {step.phone}
-									</label>
-									{isNewUser && (
-										<DropdownMenu>
-											<Label
-												htmlFor="role"
-												className="text-gray-900 dark:text-gray-100">
-												Role
-											</Label>
-											<DropdownMenuTrigger asChild>
-												<Button
-													variant="outline"
-													className="w-full justify-between capitalize bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
-													{step.role || "Select role"}
-													<ChevronDown className="h-4 w-4" />
-												</Button>
-											</DropdownMenuTrigger>
-											<DropdownMenuContent className="w-[19rem] bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
-												<DropdownMenuItem
-													onClick={() => setStep({ ...step, role: "admin" })}
-													className="text-gray-900 dark:text-gray-100">
-													Admin
-												</DropdownMenuItem>
-												<DropdownMenuItem
-													onClick={() => setStep({ ...step, role: "agent" })}
-													className="text-gray-900 dark:text-gray-100">
-													Agent
-												</DropdownMenuItem>
-											</DropdownMenuContent>
-										</DropdownMenu>
-									)}
-									<Label
-										htmlFor="otp"
-										className="text-gray-900 dark:text-gray-100">
-										Enter OTP
-									</Label>
-									<Input
-										id="otp"
-										type="text"
-										placeholder="Enter OTP received"
-										value={step.otp}
-										onChange={(e) => setStep({ ...step, otp: e.target.value })}
-										className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-										required
-									/>
-								</div>
-								<Button
-									type="submit"
-									className="w-full bg-blue-600 hover:bg-blue-900 dark:bg-blue-700 dark:hover:bg-blue-900"
-									disabled={loading}>
-									{loading ? "Verifying..." : "Verify & Login"}
-								</Button>
-								<Button
-									type="button"
-									variant="ghost"
-									className="w-full text-gray-900 dark:text-gray-100"
-									onClick={() =>
-										setStep({
-											phone: "",
-											otp: "",
-											isOtpSent: false,
-											role: "",
-											recievedOtp: "",
-										})
-									}>
-									Change phone number
-								</Button>
-							</form>
-						)}
+						</div>
 					</CardContent>
 				</Card>
 			</div>
