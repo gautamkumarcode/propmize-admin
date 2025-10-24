@@ -1,7 +1,6 @@
+import logo from "@/assests/logo.png";
 import { User } from "@/context/AuthContext";
-import { LogOut, MoveUpRight, Settings } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 
 interface MenuItem {
 	label: string;
@@ -12,33 +11,22 @@ interface MenuItem {
 }
 
 interface Profile01Props {
-	user:User
+	user: User;
 }
 
 export default function Profile01({ user }: Partial<Profile01Props> = {}) {
-	const menuItems: MenuItem[] = [
-		{
-			label: "Settings",
-			href: "#",
-			icon: <Settings className="w-4 h-4" />,
-		},
-	];
-
 	return (
 		<div className="w-full max-w-sm mx-auto">
-			<div className="relative overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800">
+			<div className="relative overflow-hidden rounded-2xl ">
 				<div className="relative px-6 pt-12 pb-6">
 					<div className="flex items-center gap-4 mb-8">
 						<div className="relative shrink-0">
 							<Image
-								src={
-									(user?.avatar as string) ||
-									"https://ferf1mheo22r9ira.public.blob.vercel-storage.com/avatar-01-n0x8HFv8EUetf9z6ht0wScJKoTHqf8.png"
-								}
+								src={(user?.avatar as string) || logo}
 								alt={(user?.name as string) || "User Avatar"}
 								width={72}
 								height={72}
-								className="rounded-full ring-4 ring-white dark:ring-zinc-900 object-cover"
+								className="rounded-full ring-4 ring-white dark:ring-zinc-900 object-contain"
 							/>
 							<div className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-zinc-900" />
 						</div>
@@ -51,8 +39,7 @@ export default function Profile01({ user }: Partial<Profile01Props> = {}) {
 							<p className="text-zinc-600 dark:text-zinc-400">{user?.role}</p>
 						</div>
 					</div>
-					<div className="h-px bg-zinc-200 dark:bg-zinc-800 my-6" />
-					<div className="space-y-2">
+					{/* <div className="space-y-2">
 						{menuItems.map((item) => (
 							<Link
 								key={item.label}
@@ -89,7 +76,7 @@ export default function Profile01({ user }: Partial<Profile01Props> = {}) {
 								</span>
 							</div>
 						</button>
-					</div>
+					</div> */}
 				</div>
 			</div>
 		</div>

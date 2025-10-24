@@ -1,51 +1,73 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Separator } from "@/components/ui/separator"
-import { Building2, Bell, Shield, DollarSign, Globe, FileText, Save, Upload, Trash2 } from "lucide-react"
+import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import {
+	Bell,
+	Building2,
+	DollarSign,
+	FileText,
+	Globe,
+	Save,
+	Shield,
+	Trash2,
+	Upload,
+} from "lucide-react";
+import { useState } from "react";
 
 export default function SettingsConfiguration() {
   const [settings, setSettings] = useState({
-    // Platform Settings
-    platformName: "EstateHub",
-    platformDescription: "Your premier real estate platform",
-    contactEmail: "admin@estatehub.com",
-    supportPhone: "+1 (555) 123-4567",
-    timezone: "America/New_York",
-    currency: "USD",
+		// Platform Settings
+		platformName: "Propmize",
+		platformDescription: "Your premier real estate platform",
+		contactEmail: "admin@propmize.com",
+		supportPhone: "+9185806 77390",
+		timezone: "Varanasi/India",
+		currency: "Rupees",
 
-    // Approval Settings
-    autoApprovalEnabled: false,
-    maxPendingDays: 7,
-    requireDocuments: true,
-    minPropertyPrice: 50000,
-    maxPropertyPrice: 10000000,
+		// Approval Settings
+		autoApprovalEnabled: false,
+		maxPendingDays: 7,
+		requireDocuments: true,
+		minPropertyPrice: 50000,
+		maxPropertyPrice: 10000000,
 
-    // Notification Settings
-    emailNotifications: true,
-    smsNotifications: false,
-    pushNotifications: true,
-    weeklyReports: true,
+		// Notification Settings
+		emailNotifications: true,
+		smsNotifications: false,
+		pushNotifications: true,
+		weeklyReports: true,
 
-    // Commission Settings
-    defaultCommissionRate: 6.0,
-    agentCommissionSplit: 50,
-    platformFee: 2.5,
+		// Commission Settings
+		defaultCommissionRate: 6.0,
+		agentCommissionSplit: 50,
+		platformFee: 2.5,
 
-    // Security Settings
-    twoFactorAuth: true,
-    sessionTimeout: 30,
-    passwordExpiry: 90,
-    maxLoginAttempts: 5,
-  })
+		// Security Settings
+		twoFactorAuth: true,
+		sessionTimeout: 30,
+		passwordExpiry: 90,
+		maxLoginAttempts: 5,
+	});
 
   const handleSettingChange = (key: string, value: any) => {
     setSettings((prev) => ({ ...prev, [key]: value }))

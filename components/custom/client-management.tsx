@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -21,12 +21,12 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useCreateClient, useGetAllClients } from "@/lib/hooks/useAdmin";
+import { AdminClientResponse } from "@/lib/types/admintype";
 import {
 	DollarSign,
 	Eye,
 	Mail,
 	MapPin,
-	MessageSquare,
 	Phone,
 	Search,
 	TrendingUp,
@@ -41,6 +41,10 @@ export default function ClientManagement() {
 	const [typeFilter, setTypeFilter] = useState("");
 	const [statusFilter, setStatusFilter] = useState("");
 	const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+	const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+	const [selectedClient, setSelectedClient] =
+		useState<AdminClientResponse | null>(null);
+
 	const [newClient, setNewClient] = useState({
 		name: "",
 		email: "",
@@ -132,6 +136,11 @@ export default function ClientManagement() {
 				alert("Failed to create client");
 			},
 		});
+	};
+
+	const handleViewClientDetails = (client: AdminClientResponse) => {
+		setSelectedClient(client);
+		setIsViewDialogOpen(true);
 	};
 
 	return (
@@ -475,23 +484,23 @@ export default function ClientManagement() {
 											</>
 										)}
 										{/* {client.role === "investor" && (
-										<>
-											<div className="text-center">
-												<div className="text-lg font-semibold">
-													Rs {(Number(client.budget) / 1000).toFixed(0)}K
+											<>
+												<div className="text-center">
+													<div className="text-lg font-semibold">
+														Rs {(Number(client.budget) / 1000).toFixed(0)}K
+													</div>
+													<div className="text-xs text-gray-500">
+														Investment Budget
+													</div>
 												</div>
-												<div className="text-xs text-gray-500">
-													Investment Budget
+												<div className="text-center">
+													<div className="text-lg font-semibold">
+														{client.propertiesViewed}
+													</div>
+													<div className="text-xs text-gray-500">Properties</div>
 												</div>
-											</div>
-											<div className="text-center">
-												<div className="text-lg font-semibold">
-													{client.propertiesViewed}
-												</div>
-												<div className="text-xs text-gray-500">Properties</div>
-											</div>
-										</>
-									)} */}
+											</>
+										)} */}
 										<div className="text-center">
 											<div className="text-sm text-gray-500">Last Active</div>
 											<div className="text-xs">
@@ -499,11 +508,11 @@ export default function ClientManagement() {
 											</div>
 										</div>
 										<div className="flex gap-2">
-											<Button variant="outline" size="sm">
+											<Button
+												variant="outline"
+												size="sm"
+												onClick={() => handleViewClientDetails(client)}>
 												<Eye className="h-4 w-4" />
-											</Button>
-											<Button variant="outline" size="sm">
-												<MessageSquare className="h-4 w-4" />
 											</Button>
 										</div>
 									</div>
@@ -513,6 +522,124 @@ export default function ClientManagement() {
 					))}
 				</div>
 			)}
+
+			<Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+				<DialogContent className="max-w-[600px]">
+					<DialogHeader>
+						<DialogTitle>Client Details</DialogTitle>
+						<DialogDescription>
+							View complete client information
+						</DialogDescription>
+					</DialogHeader>
+
+					{selectedClient && (
+						<div className="space-y-4">
+							<div className="flex items-center gap-4">
+								<Avatar className="h-14 w-14">
+									<AvatarImage
+										src={selectedClient.avatar || "/placeholder.svg"}
+										alt={selectedClient.name}
+									/>
+									<AvatarFallback>
+										{selectedClient.name
+											?.split(" ")
+											.map((n) => n[0])
+											.join("")}
+									</AvatarFallback>
+								</Avatar>
+								<div>
+									<h3 className="text-lg font-semibold">
+										{selectedClient.name}
+									</h3>
+									<div className="flex gap-2 mt-1">
+										{getTypeBadge(selectedClient.role)}
+										{getStatusBadge(
+											selectedClient.isActive ? "active" : "inactive"
+										)}
+									</div>
+								</div>
+							</div>
+
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+								<div>
+									<p className="text-sm text-gray-500">Email</p>
+									<p className="font-medium">{selectedClient.email}</p>
+								</div>
+								<div>
+									<p className="text-sm text-gray-500">Phone</p>
+									<p className="font-medium">{selectedClient.phone}</p>
+								</div>
+								<div>
+									<p className="text-sm text-gray-500">Address</p>
+									<p className="font-medium">
+										{selectedClient.address?.city},{" "}
+										{selectedClient.address?.state}
+									</p>
+								</div>
+								<div>
+									<p className="text-sm text-gray-500">Joined On</p>
+									<p className="font-medium">
+										{new Date(selectedClient.createdAt).toLocaleDateString()}
+									</p>
+								</div>
+								<div>
+									<p className="text-sm text-gray-500">Last Active</p>
+									<p className="font-medium">
+										{new Date(selectedClient.updatedAt).toLocaleDateString()}
+									</p>
+								</div>
+							</div>
+
+							{selectedClient.role === "buyer" && (
+								<div className="border-t pt-3">
+									<h4 className="font-semibold mb-2">Buyer Info</h4>
+									<p>
+										Budget: Rs{" "}
+										{(
+											Number(selectedClient.preferences?.priceRange?.max) / 1000
+										).toFixed(0)}
+										K
+									</p>
+									<p>Properties Viewed: {selectedClient.propertiesViewed}</p>
+								</div>
+							)}
+
+							{selectedClient.role === "seller" && (
+								<div className="border-t pt-3">
+									<h4 className="font-semibold mb-2">Seller Info</h4>
+									<p>
+										Property Value: Rs{" "}
+										{(Number(selectedClient.propertyValue) / 1000).toFixed(0)}K
+									</p>
+									<p>
+										Properties Listed: {selectedClient.propertiesCount || 0}
+									</p>
+								</div>
+							)}
+
+							{selectedClient.role === "investor" && (
+								<div className="border-t pt-3">
+									<h4 className="font-semibold mb-2">Investor Info</h4>
+									<p>
+										Budget: Rs{" "}
+										{(
+											Number(selectedClient.preferences.priceRange) / 1000
+										).toFixed(0)}
+										K
+									</p>
+									<p>Properties: {selectedClient.propertiesViewed}</p>
+								</div>
+							)}
+
+							<div className="flex justify-end">
+								<Button onClick={() => setIsViewDialogOpen(false)}>
+									Close
+								</Button>
+							</div>
+						</div>
+					)}
+				</DialogContent>
+			</Dialog>
 
 			{filteredClients.length === 0 && (
 				<Card>

@@ -1,5 +1,6 @@
 "use client"
 
+import logo from "@/assests/logo.png";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -79,16 +80,13 @@ export default function TopNav() {
 
 				{isAuthenticated ? (
 					<DropdownMenu>
-						<DropdownMenuTrigger className="focus:outline-none">
+						<DropdownMenuTrigger className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-full h-10 w-10 flex items-center justify-center border border-gray-300 dark:border-gray-600">
 							<Image
-								src={
-									user?.avatar ||
-									"https://ferf1mheo22r9ira.public.blob.vercel-storage.com/avatar-01-n0x8HFv8EUetf9z6ht0wScJKoTHqf8.png"
-								}
+								src={user?.avatar || logo}
 								alt="User avatar"
 								width={28}
 								height={28}
-								className="rounded-full ring-2 ring-gray-200 dark:ring-[#2B2B30] sm:w-8 sm:h-8 cursor-pointer"
+								className="object-contain rounded-full"
 							/>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent

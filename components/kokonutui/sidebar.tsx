@@ -9,7 +9,6 @@ import {
 	Home,
 	Menu,
 	Settings,
-	UserCheck,
 	Users2,
 } from "lucide-react";
 
@@ -101,9 +100,9 @@ export default function Sidebar() {
 									{/* <NavItem href="/dashboard/approvals" icon={CheckCircle}>
 										Approvals
 									</NavItem> */}
-									<NavItem href="/dashboard/agents" icon={UserCheck}>
+									{/* <NavItem href="/dashboard/agents" icon={UserCheck}>
 										Agents
-									</NavItem>
+									</NavItem> */}
 									<NavItem href="/dashboard/clients" icon={Users2}>
 										Clients
 									</NavItem>

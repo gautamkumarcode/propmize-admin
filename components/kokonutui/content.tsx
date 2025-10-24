@@ -213,7 +213,7 @@ export default function Content() {
 			</div>
 
 			{/* Quick Actions */}
-			<Card>
+			{/* <Card>
 				<CardHeader>
 					<CardTitle>Quick Actions</CardTitle>
 				</CardHeader>
@@ -253,7 +253,7 @@ export default function Content() {
 						</Link>
 					</div>
 				</CardContent>
-			</Card>
+			</Card> */}
 		</div>
 	);
 }

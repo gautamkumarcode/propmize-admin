@@ -157,10 +157,10 @@ export default function LandingPage() {
 										/>
 									</svg>
 								</div>
-								<div>
+								{/* <div>
 									<p className="text-xs text-slate-500">Active Listings</p>
 									<p className="font-bold text-slate-800">247</p>
-								</div>
+								</div> */}
 							</div>
 						</div>
 
@@ -181,10 +181,10 @@ export default function LandingPage() {
 										/>
 									</svg>
 								</div>
-								<div>
+								{/* <div>
 									<p className="text-xs text-slate-500">Agents</p>
 									<p className="font-bold text-slate-800">42</p>
-								</div>
+								</div> */}
 							</div>
 						</div>
 					</div>

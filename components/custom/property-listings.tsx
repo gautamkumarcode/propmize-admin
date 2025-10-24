@@ -34,73 +34,16 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Skeleton } from "../ui/skeleton";
 
 // Mock data for properties
-const mockProperties = [
-  {
-    id: 1,
-    title: "Modern Downtown Apartment",
-    address: "123 Main St, Downtown",
-    price: 450000,
-    bedrooms: 2,
-    bathrooms: 2,
-    sqft: 1200,
-    status: "pending",
-    type: "apartment",
-    image: "/modern-apartment-living.png",
-    listedDate: "2024-01-15",
-    agent: "John Smith",
-  },
-  {
-    id: 2,
-    title: "Luxury Family Home",
-    address: "456 Oak Ave, Suburbs",
-    price: 750000,
-    bedrooms: 4,
-    bathrooms: 3,
-    sqft: 2500,
-    status: "approved",
-    type: "house",
-    image: "/luxury-family-home.jpg",
-    listedDate: "2024-01-12",
-    agent: "Sarah Johnson",
-  },
-  {
-    id: 3,
-    title: "Cozy Studio Loft",
-    address: "789 Pine St, Arts District",
-    price: 280000,
-    bedrooms: 1,
-    bathrooms: 1,
-    sqft: 650,
-    status: "rejected",
-    type: "studio",
-    image: "/cozy-studio-loft.jpg",
-    listedDate: "2024-01-10",
-    agent: "Mike Davis",
-  },
-  {
-    id: 4,
-    title: "Waterfront Condo",
-    address: "321 Beach Blvd, Waterfront",
-    price: 620000,
-    bedrooms: 3,
-    bathrooms: 2,
-    sqft: 1800,
-    status: "pending",
-    type: "condo",
-    image: "/waterfront-condo.png",
-    listedDate: "2024-01-08",
-    agent: "Lisa Chen",
-  },
-]
 
 export default function PropertyListings() {
 	const [searchTerm, setSearchTerm] = useState("");
 	const [statusFilter, setStatusFilter] = useState("all");
 	const [typeFilter, setTypeFilter] = useState("all");
 	const router = useRouter();
-	const { data: propertiesData = [], isLoading, isError } = getAllProperties();
+	const { data: propertiesData = [], isLoading } = getAllProperties();
 
 	// const filteredProperties = properties?.filter((property) => {
 	// 	const matchesSearch =
@@ -165,7 +108,7 @@ export default function PropertyListings() {
 						Manage and approve property listings
 					</p>
 				</div>
-				<Button>Add New Property</Button>
+				{/* <Button>Add New Property</Button> */}
 			</div>
 
 			{/* Filters */}
@@ -209,83 +152,102 @@ export default function PropertyListings() {
 			</Card>
 
 			{/* Property Grid */}
-			<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-				{propertiesData?.map((property) => (
-					<Card key={property._id} className="overflow-hidden">
-						<div className="relative">
-							<img
-								src={property.images[0] || "/placeholder.svg"}
-								alt={property.title}
-								className="h-48 w-full object-cover"
-							/>
-							<div className="absolute top-2 right-2">
-								{getStatusBadge(property.approvalStatus)}
-							</div>
-						</div>
-						<CardHeader>
-							<CardTitle className="text-lg">{property.title}</CardTitle>
-							<CardDescription className="flex items-center gap-1">
-								<MapPin className="h-4 w-4" />
-								{property.address.city},{property.address.state}
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="space-y-4">
-							<div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-								Rs {(property.price ?? 0).toLocaleString()}
-							</div>
-
-							<div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-								<div className="flex items-center gap-1">
-									<Bed className="h-4 w-4" />
-									{property.bedrooms} bed
-								</div>
-								<div className="flex items-center gap-1">
-									<Bath className="h-4 w-4" />
-									{property.bathrooms} bath
-								</div>
-								<div className="flex items-center gap-1">
-									<Square className="h-4 w-4" />
-									{property.area.value} {property.area.unit}
+			{isLoading ? (
+				<div>
+					<Skeleton className="h-48 w-full" />
+					<div className="mt-4 space-y-2">
+						<Skeleton className="h-6 w-3/4" />
+						<Skeleton className="h-4 w-1/2" />
+						<Skeleton className="h-4 w-1/3" />
+					</div>
+					<Skeleton className="h-4 w-full" />
+					<div className="mt-4 space-y-2">
+						<Skeleton className="h-8 w-1/3" />
+						<Skeleton className="h-8 w-1/3" />
+						<Skeleton className="h-8 w-1/3" />
+						<Skeleton className="h-8 w-1/3" />
+						<Skeleton className="h-8 w-1/3" />
+					</div>
+				</div>
+			) : (
+				<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+					{propertiesData?.map((property) => (
+						<Card key={property._id} className="overflow-hidden">
+							<div className="relative flex justify-center bg-gray-100 dark:bg-gray-800">
+								<img
+									src={property.images[0] || "/placeholder.svg"}
+									alt={property.title}
+									className="min-h-48 w-full object-contain max-h-80"
+								/>
+								<div className="absolute top-2 right-2">
+									{getStatusBadge(property.approvalStatus)}
 								</div>
 							</div>
+							<CardHeader>
+								<CardTitle className="text-lg">{property.title}</CardTitle>
+								<CardDescription className="flex items-center gap-1">
+									<MapPin className="h-4 w-4" />
+									{property.address.city},{property.address.state}
+								</CardDescription>
+							</CardHeader>
+							<CardContent className="space-y-4">
+								<div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+									Rs {(property.price ?? 0).toLocaleString()}
+								</div>
 
-							<div className="text-sm text-gray-500 dark:text-gray-400">
-								Listed by {property.seller.name} on{" "}
-								{new Date(property.createdAt).toLocaleDateString()}
-							</div>
+								<div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+									<div className="flex items-center gap-1">
+										<Bed className="h-4 w-4" />
+										{property.bedrooms} bed
+									</div>
+									<div className="flex items-center gap-1">
+										<Bath className="h-4 w-4" />
+										{property.bathrooms} bath
+									</div>
+									<div className="flex items-center gap-1">
+										<Square className="h-4 w-4" />
+										{property.area.value} {property.area.unit}
+									</div>
+								</div>
 
-							<div className="flex gap-2">
-								<Button
-									variant="outline"
-									onClick={() => handleView(property._id)}
-									size="sm"
-									className="flex-1 bg-transparent">
-									<Eye className="h-4 w-4 mr-1" />
-									View
-								</Button>
-								{property.status === "pending" && (
-									<>
-										<Button
-											size="sm"
-											className="bg-green-600 hover:bg-green-700"
-											onClick={() => handleApprove(property._id)}>
-											<CheckCircle className="h-4 w-4 mr-1" />
-											Approve
-										</Button>
-										<Button
-											size="sm"
-											variant="destructive"
-											onClick={() => handleReject(property._id)}>
-											<XCircle className="h-4 w-4 mr-1" />
-											Reject
-										</Button>
-									</>
-								)}
-							</div>
-						</CardContent>
-					</Card>
-				))}
-			</div>
+								<div className="text-sm text-gray-500 dark:text-gray-400">
+									Listed by {property.seller.name} on{" "}
+									{new Date(property.createdAt).toLocaleDateString()}
+								</div>
+
+								<div className="flex gap-2">
+									<Button
+										variant="outline"
+										onClick={() => handleView(property._id)}
+										size="sm"
+										className="flex-1 bg-transparent">
+										<Eye className="h-4 w-4 mr-1" />
+										View
+									</Button>
+									{property.status === "pending" && (
+										<>
+											<Button
+												size="sm"
+												className="bg-green-600 hover:bg-green-700"
+												onClick={() => handleApprove(property._id)}>
+												<CheckCircle className="h-4 w-4 mr-1" />
+												Approve
+											</Button>
+											<Button
+												size="sm"
+												variant="destructive"
+												onClick={() => handleReject(property._id)}>
+												<XCircle className="h-4 w-4 mr-1" />
+												Reject
+											</Button>
+										</>
+									)}
+								</div>
+							</CardContent>
+						</Card>
+					))}
+				</div>
+			)}
 
 			{propertiesData?.length === 0 && (
 				<Card>
